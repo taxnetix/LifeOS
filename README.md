@@ -6,7 +6,7 @@ It ingests real documents — bank statements, policy schedules, medical aid pla
 
 Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
 
-> **Status: Phase 2 of 7.** The spine works, documents flow in with provenance, readiness is scored, and the Life File renders to PDF. Financial and cover domains land in phases 3–4. See [the roadmap](#roadmap).
+> **Status: Phase 3 of 7.** Documents flow in with provenance, readiness is scored, the Life File renders to PDF, and bank statements become a categorised ledger, a dashboard and ranked optimisation findings. Cover and wealth land next. See [the roadmap](#roadmap).
 
 ## The idea in one paragraph
 
@@ -90,8 +90,8 @@ No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, ne
 | 0 | Architecture, agent catalogue, schemas, ADRs | ✅ |
 | 1 | Skeleton and spine — loop, hooks, vault, 4 system agents | ✅ |
 | 2 | Ingestion, provenance, readiness, the Life File | ✅ |
-| 3 | Financial flagship — statements → dashboard → optimisation | next |
-| 4 | Cover and wealth — insurance, medical, investments, gap analysis | |
+| 3 | Financial flagship — statements → dashboard → optimisation | ✅ |
+| 4 | Cover and wealth — insurance, medical, investments, gap analysis | next |
 | 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | |
 | 6 | Trusts pack, installable standalone | |
 | 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | |

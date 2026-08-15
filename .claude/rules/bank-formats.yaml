@@ -1,0 +1,158 @@
+# SA bank statement layouts — data, not code.
+#
+# An adapter is selected by FINGERPRINTING the document text, never by trusting
+# a filename or a user's claim about which bank it is.
+#
+# ── On honesty about what is verified ────────────────────────────────────────
+# `verified: true` means an adapter has been tested against a real statement
+# from that institution and has a fixture in vault.example/.
+#
+# `verified: false` means the layout is a best-effort description written
+# WITHOUT a real statement to test against. Column order, date format and
+# sign convention are the things that vary, and getting them wrong produces
+# plausible, wrong numbers. So an unverified adapter is deliberately capped
+# below the transaction confidence floor: it will parse, and its output goes to
+# proposed/ for confirmation rather than into the ledger.
+#
+# Promoting one to verified: true requires a real statement, a fixture, and a
+# passing test. Do not flip the flag without those. Getting a bank's layout
+# wrong is exactly the failure that a confidence floor exists to catch.
+#
+# as_at: 2026-08-15
+schema: bank-formats/1
+
+defaults:
+  currency: ZAR
+  date_formats: ["%d %b %Y", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d %B %Y"]
+  # Confidence a parsed row carries. The transactions floor is 0.90, so anything
+  # below that lands in proposed/ instead of the ledger.
+  confidence_verified: 0.97
+  confidence_unverified: 0.60
+
+banks:
+  # ── Verified: fixtures exist and tests run against them ──────────────────
+  northbank:
+    label: Northbank (fictional — the test fixture bank)
+    verified: true
+    fingerprint:
+      all: ["northbank"]
+      any: ["cheque account statement", "money out", "money in"]
+    layout:
+      kind: two_column          # separate money-out / money-in columns
+      date_format: "%d %b %Y"
+      columns: [date, description, out, in, balance]
+      skip_rows_matching: ["opening balance", "closing balance", "brought forward"]
+      # Case-insensitivity is opted into per-group with (?i:...). Compiling
+      # the whole pattern with re.I would make ([A-Z][A-Z ]+) greedy and let it
+      # swallow the label that follows.
+      account_no_pattern: '(?i:account number)\s+([0-9 ]{8,20}?)(?=\s+[A-Z][a-z])'
+      branch_pattern: '(?i:branch code)\s+(\d{6})'
+      holder_pattern: '(?i:account holder)\s+([A-Z][A-Z ]+?)(?=\s+[A-Z][a-z])'
+      period_pattern: '(?i:statement period)\s+(.+?)\s+[–-]\s+(\d{1,2}\s+\w{3,9}\s+\d{4})'
+
+  meridian_business:
+    label: Meridian Business (fictional — the test fixture business bank)
+    verified: true
+    fingerprint:
+      any: ["posting date;narrative", "posting date,narrative"]
+    layout:
+      kind: signed_amount       # one signed column: negative is outflow
+      date_format: "%d/%m/%Y"
+      columns: [date, description, amount, balance]
+      is_business: true
+
+  # ── Unverified: written without a real statement. Output goes to proposed/ ──
+  fnb:
+    label: First National Bank
+    verified: false
+    fingerprint:
+      any: ["first national bank", "fnb.co.za", "fnb premier", "fnb private"]
+    layout:
+      kind: signed_amount
+      date_format: "%d %b"
+      columns: [date, description, amount, balance]
+      note: FNB omits the year on transaction rows; it must be taken from the period header.
+
+  absa:
+    label: ABSA
+    verified: false
+    fingerprint:
+      any: ["absa bank", "absa.co.za"]
+    layout:
+      kind: two_column
+      date_format: "%d/%m/%Y"
+      columns: [date, description, out, in, balance]
+
+  standard_bank:
+    label: Standard Bank
+    verified: false
+    fingerprint:
+      any: ["standard bank", "standardbank.co.za"]
+    layout:
+      kind: signed_amount
+      date_format: "%d %m %Y"
+      columns: [date, description, amount, balance]
+
+  nedbank:
+    label: Nedbank
+    verified: false
+    fingerprint:
+      any: ["nedbank", "nedbank.co.za"]
+    layout:
+      kind: two_column
+      date_format: "%d %b %Y"
+      columns: [date, description, out, in, balance]
+
+  capitec:
+    label: Capitec
+    verified: false
+    fingerprint:
+      any: ["capitec bank", "capitecbank.co.za"]
+    layout:
+      kind: signed_amount
+      date_format: "%Y/%m/%d"
+      columns: [date, description, amount, balance]
+
+  investec:
+    label: Investec
+    verified: false
+    fingerprint:
+      any: ["investec"]
+    layout:
+      kind: signed_amount
+      date_format: "%d %b %Y"
+      columns: [date, description, amount, balance]
+
+  discovery_bank:
+    label: Discovery Bank
+    verified: false
+    fingerprint:
+      any: ["discovery bank"]
+    layout:
+      kind: signed_amount
+      date_format: "%d %b %Y"
+      columns: [date, description, amount, balance]
+
+  tymebank:
+    label: TymeBank
+    verified: false
+    fingerprint:
+      any: ["tymebank", "tyme bank"]
+    layout:
+      kind: signed_amount
+      date_format: "%Y-%m-%d"
+      columns: [date, description, amount, balance]
+
+# Last resort for a tabular export with a recognisable header row and no
+# institution fingerprint. Columns are matched by header NAME rather than
+# position, because position is the thing that varies most between exports.
+generic_tabular:
+  label: Generic transaction export
+  verified: false
+  header_aliases:
+    date: [date, "posting date", "transaction date", "value date", datum]
+    description: [description, narrative, details, reference, memo, particulars]
+    amount: [amount, value, bedrag]
+    out: [debit, "money out", withdrawal, "debit amount", uit]
+    in: [credit, "money in", deposit, "credit amount", in]
+    balance: [balance, "running balance", saldo]

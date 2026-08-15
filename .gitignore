@@ -26,6 +26,8 @@ vault.example/reports/
 vault.example/state/*.json
 vault.example/state/*.jsonl
 vault.example/ledgers/*.jsonl
+vault.example/proposed/low-confidence/
+vault.example/proposed/rejected/
 
 # ─── Python ──────────────────────────────────────────────────────────────────
 .venv/

@@ -1,0 +1,215 @@
+# Transaction categorisation — SA merchants and payment narratives.
+#
+# Rules are data. Adding a merchant is an edit here, never a code change.
+#
+# A match must clear `min_confidence` or the transaction lands UNCATEGORISED
+# with a question for the human. That is deliberate: a wrong category is worse
+# than no category, because it silently distorts every downstream figure —
+# cashflow, budget variance, the savings rate, and which expenses look
+# tax-deductible.
+#
+# `tax_relevance` marks what a tax practitioner would want to see. It is a FLAG
+# for review, never a claim that something is deductible — that determination
+# belongs to a registered practitioner and to the tax domain's rulebooks.
+#
+# as_at: 2026-08-15
+schema: categories/1
+min_confidence: 0.90
+
+# Matched in order; first hit wins, so put specific patterns above general ones.
+rules:
+  # ── Income ────────────────────────────────────────────────────────────────
+  - match: ["salary", "salaris", "payroll"]
+    category: income
+    subcategory: salary
+    direction: in
+    confidence: 0.98
+
+  - match: ["rent received", "rental received", "huur ontvang"]
+    category: income
+    subcategory: rental
+    direction: in
+    tax_relevance: [rental_income]
+    confidence: 0.97
+
+  - match: ["client payment", "invoice payment", "customer payment"]
+    category: income
+    subcategory: business_revenue
+    direction: in
+    confidence: 0.95
+
+  - match: ["interest received", "credit interest", "rente"]
+    category: income
+    subcategory: interest
+    direction: in
+    tax_relevance: [none]
+    confidence: 0.96
+
+  - match: ["dividend"]
+    category: income
+    subcategory: dividend
+    direction: in
+    confidence: 0.95
+
+  # ── Housing ───────────────────────────────────────────────────────────────
+  - match: ["bond repayment", "home loan", "homeloan", "verband"]
+    category: housing
+    subcategory: bond
+    confidence: 0.98
+
+  - match: ["levy", "levies", "body corporate", "hoa"]
+    category: housing
+    subcategory: levies
+    confidence: 0.94
+
+  - match: ["municipal", "municipality", "rates and taxes", "city of "]
+    category: housing
+    subcategory: municipal
+    confidence: 0.95
+
+  - match: ["office rent", "kantoor huur"]
+    category: business
+    subcategory: premises
+    tax_relevance: [business_expense]
+    confidence: 0.95
+
+  # ── Insurance and medical ─────────────────────────────────────────────────
+  - match: ["outsurance", "santam", "hollard", "king price", "miway",
+            "budget insurance", "first for women", "naked insurance",
+            "short term insurance", "korttermyn"]
+    category: insurance
+    subcategory: short_term
+    confidence: 0.96
+
+  - match: ["old mutual", "sanlam", "liberty", "momentum", "brightrock",
+            "1life", "assupol", "metropolitan"]
+    category: insurance
+    subcategory: life
+    confidence: 0.92
+
+  - match: ["discovery health", "bonitas", "momentum health", "medihelp",
+            "bestmed", "fedhealth", "medical scheme", "medshield", "profmed"]
+    category: medical
+    subcategory: medical_aid
+    tax_relevance: [medical]
+    confidence: 0.97
+
+  - match: ["dis-chem", "clicks pharmacy", "clicks ", "medirite", "pharmacy",
+            "apteek", "netcare", "mediclinic", "life healthcare"]
+    category: medical
+    subcategory: healthcare
+    tax_relevance: [medical]
+    confidence: 0.93
+
+  # ── Retirement and savings ────────────────────────────────────────────────
+  - match: ["ra contrib", "retirement annuity", "allan gray", "coronation",
+            "ninety one", "sygnia", "10x investments", "easyequities",
+            "satrix", "prescient"]
+    category: savings
+    subcategory: investment
+    tax_relevance: [retirement]
+    confidence: 0.94
+
+  - match: ["tfsa", "tax free savings"]
+    category: savings
+    subcategory: tfsa
+    confidence: 0.96
+
+  # ── Subscriptions ─────────────────────────────────────────────────────────
+  - match: ["netflix", "spotify", "showmax", "disney", "apple.com/bill",
+            "google storage", "youtube premium", "amazon prime", "audible"]
+    category: subscriptions
+    subcategory: streaming
+    confidence: 0.97
+
+  - match: ["dstv", "multichoice"]
+    category: subscriptions
+    subcategory: television
+    confidence: 0.97
+
+  - match: ["github", "openai", "anthropic", "adobe", "microsoft 365",
+            "jetbrains", "atlassian", "figma", "notion", "slack", "aws ",
+            "amazon web services", "digitalocean", "cloudflare"]
+    category: subscriptions
+    subcategory: software
+    tax_relevance: [business_expense]
+    confidence: 0.94
+
+  - match: ["virgin active", "planet fitness", "gym", "crossfit", "run club"]
+    category: subscriptions
+    subcategory: fitness
+    confidence: 0.95
+
+  # ── Telecoms and utilities ────────────────────────────────────────────────
+  - match: ["mtn", "vodacom", "telkom", "cell c", "rain ", "afrihost",
+            "webafrica", "vumatel", "openserve", "prepaid data", "airtime"]
+    category: utilities
+    subcategory: telecoms
+    confidence: 0.95
+
+  - match: ["eskom", "prepaid electricity", "electricity", "krag"]
+    category: utilities
+    subcategory: electricity
+    confidence: 0.95
+
+  # ── Groceries, fuel, transport ────────────────────────────────────────────
+  - match: ["woolworths", "checkers", "pick n pay", "pnp ", "spar", "shoprite",
+            "food lover", "makro", "game stores", "boxer"]
+    category: groceries
+    subcategory: supermarket
+    confidence: 0.95
+
+  - match: ["engen", "shell", "bp ", "sasol", "total ", "caltex", "astron",
+            "garage", "petrol", "fuel"]
+    category: transport
+    subcategory: fuel
+    tax_relevance: [travel]
+    confidence: 0.93
+
+  - match: ["uber", "bolt ", "gautrain", "taxify", "e-toll", "sanral"]
+    category: transport
+    subcategory: travel
+    confidence: 0.94
+
+  # ── Retail ────────────────────────────────────────────────────────────────
+  - match: ["takealot", "amazon.", "superbalist", "mr price", "h&m", "zara",
+            "cotton on", "sportsmans", "cape union"]
+    category: shopping
+    subcategory: retail
+    confidence: 0.92
+
+  # ── Tax and statutory ─────────────────────────────────────────────────────
+  - match: ["sars efiling", "sars ", "receiver of revenue", "irp6", "vat payment",
+            "paye", "emp201", "uif", "sdl"]
+    category: tax
+    subcategory: sars
+    tax_relevance: [none]
+    confidence: 0.97
+
+  # ── Bank fees — small, invisible, and worth surfacing ─────────────────────
+  - match: ["service fee", "monthly account fee", "card fee", "admin fee",
+            "bank charges", "cash deposit fee", "transaction fee",
+            "atm fee", "diensfooi"]
+    category: fees
+    subcategory: bank_charges
+    confidence: 0.97
+
+  - match: ["interest charged", "debit interest", "finance charge",
+            "overdraft interest"]
+    category: fees
+    subcategory: interest_paid
+    confidence: 0.96
+
+  # ── Business payroll ──────────────────────────────────────────────────────
+  - match: ["salaries", "salary batch", "employee batch", "wages"]
+    category: business
+    subcategory: payroll
+    tax_relevance: [business_expense]
+    confidence: 0.95
+
+  # ── Transfers — not spending, and counting them as such distorts everything ─
+  - match: ["transfer to", "transfer from", "internal transfer", "oorplasing",
+            "payment received - thank you", "payment - thank you"]
+    category: transfer
+    subcategory: internal
+    confidence: 0.93

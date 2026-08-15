@@ -38,7 +38,7 @@ def test_hash_is_content_addressed_not_name_addressed(tmp_path):
 
 def test_pdf_blocks_are_line_level_so_a_row_is_locatable():
     """A locator of 'page=1' cannot answer 'where did this figure come from?'."""
-    r = extract.extract(_fx("northbank-cheque-jul-2026.pdf"))
+    r = extract.extract(_fx("northbank-cheque-2026-07.pdf"))
     assert not r.errors
     assert len(r.blocks) > 10, "one block per page defeats provenance"
     netflix = [b for b in r.blocks if "NETFLIX" in b.text]
@@ -48,7 +48,7 @@ def test_pdf_blocks_are_line_level_so_a_row_is_locatable():
 
 
 def test_pdf_locators_are_unique_and_stable_across_runs():
-    f = _fx("northbank-cheque-jul-2026.pdf")
+    f = _fx("northbank-cheque-2026-07.pdf")
     a, b = extract.extract(f), extract.extract(f)
     locs = [x.locator for x in a.blocks]
     assert len(locs) == len(set(locs)), "duplicate locators would collide record ids"
@@ -57,7 +57,7 @@ def test_pdf_locators_are_unique_and_stable_across_runs():
 
 
 def test_text_layer_confidence_is_high():
-    r = extract.extract(_fx("northbank-cheque-jul-2026.pdf"))
+    r = extract.extract(_fx("northbank-cheque-2026-07.pdf"))
     assert min(b.confidence for b in r.blocks) >= 0.95
     assert r.ocr is False
 
@@ -65,7 +65,7 @@ def test_text_layer_confidence_is_high():
 def test_ocr_confidence_is_lower_than_a_text_layer():
     """A scan and a text layer must not look equally trustworthy."""
     scan = extract.extract(_fx("deed-of-grave-scan.png"))
-    digital = extract.extract(_fx("northbank-cheque-jul-2026.pdf"))
+    digital = extract.extract(_fx("northbank-cheque-2026-07.pdf"))
     assert scan.ocr is True
     assert scan.blocks, "OCR produced nothing"
     assert max(b.confidence for b in scan.blocks) < min(b.confidence for b in digital.blocks)
@@ -122,7 +122,7 @@ def test_docx_table_is_extracted_with_high_confidence():
 def test_incoherent_inferred_tables_are_dropped():
     """A whitespace-shredded grid is confidently wrong, and would carry a
     confidence above the default write floor straight into a ledger."""
-    r = extract.extract(_fx("northbank-cheque-jul-2026.pdf"))
+    r = extract.extract(_fx("northbank-cheque-2026-07.pdf"))
     for t in r.tables:
         counts = [sum(1 for c in row if c) for row in t.rows]
         modal = max(set(counts), key=counts.count)
@@ -130,7 +130,7 @@ def test_incoherent_inferred_tables_are_dropped():
 
 
 def test_every_block_carries_a_locator_and_confidence():
-    for name in ("northbank-cheque-jul-2026.pdf", "will-a-sample-2023.docx",
+    for name in ("northbank-cheque-2026-07.pdf", "will-a-sample-2023.docx",
                  "meridian-holdings-jul-2026.xlsx", "capital-card-jul-2026.csv"):
         r = extract.extract(_fx(name))
         for b in r.blocks:
