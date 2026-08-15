@@ -24,6 +24,10 @@
   --brand-500:#2bbe98; --brand-600:#239d7f; --brand-700:#1d7b67;
   --brand-deep:#205356; --brand-300:#5de5cc;
   --brand-gradient:linear-gradient(142.58deg,#2bbe98 0%,#205356 100%);
+  /* The brand gradient runs to a deep cyan that reads as ink at 38px and as
+     dim at 116px. The Life File wordmark gets its own ramp, kept inside the
+     palette but held brighter across its whole span. */
+  --lf-gradient:linear-gradient(118deg,#2bbe98 0%,#239d7f 52%,#205356 100%);
   --accent:#6d6e71; --surface:#b5b4b5; --brand-text:#3f4042;
 
   /* Spartan neutral tokens, copied verbatim from
@@ -49,6 +53,7 @@
     --border:oklch(1 0 0 / 10%);
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
     --logo:url('assets/intellitax-logo-dark.svg');
+    --lf-gradient:linear-gradient(118deg,#5de5cc 0%,#2bbe98 55%,#239d7f 100%);
   }
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -185,17 +190,45 @@ h2.sec{font-size:clamp(27px,3.4vw,38px);line-height:1.16;letter-spacing:-1px;
   border-radius:0 18px 18px 0;padding:26px 30px;margin-top:22px;box-shadow:var(--shadow)}
 .finding p{margin:0;font-size:15.5px;color:var(--muted)}
 
+/* ── the Life File, given masthead weight ──────────────────────────────────
+   This is the artefact every other part of the system points at, so the
+   section carries the masthead's field and a display-sized wordmark rather
+   than the ordinary eyebrow-plus-h2 the other sections use. */
+#life-file{position:relative;isolation:isolate;overflow:hidden}
+/* The masthead's glow sits hard right, which suits a left-aligned hero and
+   not a centred one. Same two lights, moved to the centre line. */
+#life-file .field::before{
+  background:radial-gradient(52% 62% at 50% 0%,rgba(43,190,152,.20),transparent 70%),
+             radial-gradient(42% 52% at 50% 100%,rgba(32,83,86,.17),transparent 72%)}
+.lf-head{text-align:center;max-width:44rem;margin:0 auto}
+h2.lf-word{display:block;max-width:none;font-size:clamp(56px,11vw,116px);
+  line-height:.94;font-weight:700;letter-spacing:-.045em;margin:4px 0 0;
+  background:var(--lf-gradient);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent}
+.lf-sub{font-size:clamp(20px,2.7vw,28px);font-weight:600;letter-spacing:-.5px;
+  margin:16px 0 0;line-height:1.25}
+.lf-head .lead{margin:18px auto 0}
+
 /* ── example downloads ─────────────────────────────────────────────────── */
-.downloads{margin-top:34px;padding:30px;border:1px solid var(--border);
+.downloads{margin-top:38px;padding:32px;border:1px solid var(--border);
   border-radius:20px;background:var(--card-2)}
 .dl-lead{margin:0;font-size:15.5px;color:var(--muted);max-width:62ch}
 .dl-lead strong{color:var(--fg);font-weight:650}
 .dl-lead code{background:var(--card);border:1px solid var(--border);border-radius:6px;
   padding:1px 6px;font-size:13.5px;white-space:nowrap}
-.downloads .actions{margin-top:22px}
+.downloads .actions{margin-top:24px}
 .dl-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;flex:none}
-.dl-note{margin:18px 0 0;font-size:13.5px;color:var(--muted)}
+.dl-note{margin:20px 0 0;font-size:13.5px;color:var(--muted)}
+
+/* Two-line download buttons. A one-line "Tier 1 — First 48 Hours" read as
+   navigation; the verb, the file type and the size have to be on the control
+   itself for it to read as a download. */
+.btn-dl{padding:14px 26px;text-align:left;gap:12px}
+.btn-dl .dl-ico{width:20px;height:20px}
+.dl-stack{display:flex;flex-direction:column;line-height:1.32}
+.dl-t{font-size:15px;font-weight:700}
+.dl-s{font-size:12.5px;font-weight:500;opacity:.8}
 
 /* ── two install routes ────────────────────────────────────────────────── */
 .routes{display:grid;gap:20px;margin-top:34px}
@@ -294,6 +327,13 @@ pre code{background:none;padding:0;color:var(--fg)}
   .actions{gap:12px}
   .actions .btn{flex:1 1 100%;justify-content:center}
   .closing{padding:48px 24px;border-radius:24px;margin:56px 0}
+  /* The two-line download buttons are nowrap by default, which puts their
+     min-content width above the card's content box — the pill then overflows
+     its flex line and only the card padding hides it. Tighter padding buys
+     the room back; `normal` lets the label wrap rather than break out on the
+     narrowest phones. */
+  .downloads{padding:24px}
+  .btn-dl{padding:14px 20px;white-space:normal}
   .included{padding:26px}
   .card{padding:24px}
   .finding{padding:22px 24px}
@@ -528,14 +568,18 @@ pre code{background:none;padding:0;color:var(--fg)}
 
   <!-- ── the life file ────────────────────────────────────────────────── -->
   <section id="life-file" class="alt">
+    <div class="field" aria-hidden="true"><div class="dots"></div></div>
     <div class="wrap">
-      <p class="eyebrow">The Life File</p>
-      <h2 class="sec">The document you hand your family</h2>
-      <p class="lead">
-        Everything they need on the worst day, in three audience tiers. No
-        passwords, PINs or safe codes at any tier — LifeOS prints the pointer,
-        never the secret.
-      </p>
+      <div class="lf-head">
+        <p class="eyebrow">The artefact everything points at</p>
+        <h2 class="sec lf-word">Life File</h2>
+        <p class="lf-sub">The document you hand your family</p>
+        <p class="lead">
+          Everything they need on the worst day, in three audience tiers. No
+          passwords, PINs or safe codes at any tier — LifeOS prints the pointer,
+          never the secret.
+        </p>
+      </div>
 
       <div class="cards three">
         <div class="card">
@@ -572,18 +616,25 @@ pre code{background:none;padding:0;color:var(--fg)}
           fictional demo vault. Nobody in them exists.
         </p>
         <div class="actions">
-          <a class="btn btn-primary" href="examples/life-file-tier1-first-48-hours.pdf" download>
+          <a class="btn btn-primary btn-dl" href="examples/life-file-tier1-first-48-hours.pdf" download>
             <svg class="dl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
-            Tier 1 — First 48 Hours
+            <span class="dl-stack">
+              <span class="dl-t">Download example Life File</span>
+              <span class="dl-s">Tier 1 — First 48 Hours · PDF</span>
+            </span>
           </a>
-          <a class="btn btn-ghost" href="examples/life-file-tier2-executor-pack.pdf" download>
+          <a class="btn btn-ghost btn-dl" href="examples/life-file-tier2-executor-pack.pdf" download>
             <svg class="dl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
-            Tier 2 — Executor Pack
+            <span class="dl-stack">
+              <span class="dl-t">Download example Life File</span>
+              <span class="dl-s">Tier 2 — Executor Pack · PDF</span>
+            </span>
           </a>
         </div>
         <p class="dl-note">
-          PDF · 8 pages · no identifiers in tier 1, masked to last 4 in tier 2.
-          Tier 3 unmasks, so no specimen of it is published.
+          7 pages and 8 pages respectively. No identifiers at all in tier 1,
+          masked to the last four digits in tier 2. Tier 3 unmasks, so no
+          specimen of it is published.
         </p>
       </div>
     </div>
