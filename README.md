@@ -6,7 +6,7 @@ It ingests real documents — bank statements, policy schedules, medical aid pla
 
 Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
 
-> **Status: Phase 3 of 7.** Documents flow in with provenance, readiness is scored, the Life File renders to PDF, and bank statements become a categorised ledger, a dashboard and ranked optimisation findings. Cover and wealth land next. See [the roadmap](#roadmap).
+> **Status: Phase 4 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax and estate land next. See [the roadmap](#roadmap).
 
 ## The idea in one paragraph
 
@@ -50,7 +50,9 @@ vault/       VAULT    your real life. Git-ignored. Never leaves your machine.
 | `/ingest` | Force an inbox sweep |
 | `/readiness` | Life File score, and the shortest path to improving it |
 | **`/life-file`** | **The document you hand your family when you die** |
-| `/dashboard` · `/optimise` · `/review` | Reports, ranked proposals, deep domain reviews |
+| `/dashboard` · `/optimise` | Cashflow dashboard · ranked, costed findings |
+| `/review cover` | **The consolidated health and risk map** — what no single document says |
+| `/review <domain>` | Deep review of one domain |
 | `/deadlines` · `/ask` · `/what-if` · `/life-event` | Due dates · cross-domain Q&A with citations · scenarios · cascades |
 | `/issues` | The system's own backlog on GitHub |
 | `/consolidate` · `/audit` · `/add-domain` · `/forget` | Memory ritual · provenance proof · self-extension · POPIA erasure |
@@ -68,6 +70,8 @@ Full contracts: [docs/commands.md](docs/commands.md).
 **Nothing personal leaves the machine.** A `PreToolUse` hook blocks any outbound call — web, `curl`, or `gh` — carrying an SA ID number, an account number, or a name from your profile. It is a mechanism, not a policy, so it holds even when an agent is wrong.
 
 **It maintains itself.** Agents file GitHub issues about the *system* — a bank changed its statement layout, a tax table is past its refresh interval — never about your life. That boundary is enforced by the same hook.
+
+**It sees what no single document says.** The medical scheme covers hospital, the gap policy covers the shortfall it leaves, the employer covers part of your income, and a personal policy covers a part that may not stack with it. Each document is silent about the others. `/review cover` reads them together and names the duplication, the cover that ends with your job, and the hole where day-to-day care falls between the two.
 
 **It can grow itself.** `/add-domain` scaffolds a new domain from the charter template, and the next heartbeat picks it up with no changes to the orchestrator.
 
@@ -91,8 +95,8 @@ No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, ne
 | 1 | Skeleton and spine — loop, hooks, vault, 4 system agents | ✅ |
 | 2 | Ingestion, provenance, readiness, the Life File | ✅ |
 | 3 | Financial flagship — statements → dashboard → optimisation | ✅ |
-| 4 | Cover and wealth — insurance, medical, investments, gap analysis | next |
-| 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | |
+| 4 | Cover and wealth — insurance, medical, investments, gap analysis | ✅ |
+| 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | next |
 | 6 | Trusts pack, installable standalone | |
 | 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | |
 

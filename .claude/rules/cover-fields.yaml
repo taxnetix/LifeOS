@@ -1,0 +1,137 @@
+# Field extraction for cover documents — label patterns, as data.
+#
+# Policy schedules and benefit statements are strict "Label Value" lines, so
+# every pattern is LINE-ANCHORED (^...$ with re.M). Searching the whole text
+# instead lets a document TITLE win over the labelled row — "MERIDIAN HEALTH
+# MEDICAL SCHEME" as a heading satisfies a loose /medical scheme/ and captures
+# the next word, "Membership", as the scheme name.
+#
+# The first regex group is the value; `type` says how to coerce it.
+#
+# A field that does not match is ABSENT, and its absence becomes a gap record.
+# Nothing here fabricates a default: an unstated waiting period is unknown, not
+# zero, and an unstated escalation is unknown, not "none". Both defaults would
+# understate a real risk.
+#
+# `type`:  money  -> integer cents via lifeos.money
+#          pct    -> float percentage
+#          date   -> ISO date
+#          int    -> integer
+#          text   -> trimmed string (the default)
+#
+# as_at: 2026-08-15
+schema: cover-fields/1
+
+# Confidence for a field read from a labelled row in a text-layer document.
+# Below the policies floor (0.85) a record goes to proposed/ instead.
+confidence: 0.94
+
+types:
+
+  policy_schedule:
+    ledger: policies
+    fields:
+      policy_no:        {pattern: '^(?i:policy number)\s+(\S.*?)\s*$'}
+      insurer:          {pattern: '^(?i:insurer)\s+(\S.*?)\s*$'}
+      # Many schedules never label the insurer — it appears only as letterhead.
+      # Falling back to the first all-caps line beats recording "unknown".
+      insurer_fallback: {pattern: '^([A-Z][A-Z&()\.\- ]{6,60})\s*$'}
+      policy_type:      {pattern: '^(?i:policy type)\s+(\S.*?)\s*$'}
+      life_assured:     {pattern: '^(?i:life assured|principal insured)\s+(\S.*?)\s*$'}
+      owner_name:       {pattern: '^(?i:policy owner)\s+(\S.*?)\s*$'}
+      premium:          {pattern: '^(?i:monthly premium)\s+(\S.*?)\s*$', type: money}
+      sum_assured:      {pattern: '^(?i:sum assured)\s+(\S.*?)\s*$', type: money}
+      monthly_benefit:  {pattern: '^(?i:monthly benefit)\s+(\S.*?)\s*$', type: money}
+      escalation_pct:   {pattern: '^(?i:premium escalation)\s+([\d.]+)\s*%', type: pct}
+      inception_on:     {pattern: '^(?i:inception date)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      waiting_period:   {pattern: '^(?i:general waiting period|waiting period)\s+(\d+)\s*months?', type: int}
+      ceded_to:         {pattern: '^(?i:ceded to)\s+(\S.*?)\s*$'}
+      ceases_age:       {pattern: '^(?i:benefit ceases)\s+[Aa]ge\s+(\d+)', type: int}
+    # Map the free-text policy type onto the schema's class/subclass enums.
+    class_map:
+      income protection:       {class: income_protection}
+      temporary and permanent: {class: income_protection}
+      whole life:              {class: life}
+      life assurance:          {class: life}
+      term life:               {class: life}
+      dread disease:           {class: dread_disease}
+      severe illness:          {class: dread_disease}
+      capital disability:      {class: disability}
+      disability:              {class: disability}
+      funeral:                 {class: funeral}
+      household:               {class: short_term, subclass: contents}
+      buildings:               {class: short_term, subclass: buildings}
+      vehicle:                 {class: short_term, subclass: vehicle}
+
+  medical_aid_certificate:
+    ledger: medical-aid
+    kind: scheme
+    fields:
+      provider:         {pattern: '^(?i:medical scheme)\s+(\S.*?)\s*$'}
+      member_no:        {pattern: '^(?i:membership number)\s+(\S.*?)\s*$'}
+      plan:             {pattern: '^(?i:plan)\s+(\S.*?)\s*$'}
+      # (?!change) keeps "Option change window" from being read as the option.
+      option:           {pattern: '^(?i:option)\s+(?!change)(\S.*?)\s*$'}
+      main_member:      {pattern: '^(?i:main member)\s+(\S.*?)\s*$'}
+      premium:          {pattern: '^(?i:monthly contribution)\s+(\S.*?)\s*$', type: money}
+      savings_annual:   {pattern: '^(?i:medical savings account)[^R\n]*(R\s?[\d  ,.]+\d)', type: money}
+      threshold_annual: {pattern: '^(?i:above threshold benefit)[^R\n]*(R\s?[\d  ,.]+\d)', type: money}
+      self_payment_gap: {pattern: '^(?i:self-payment gap)\s+(\S.*?)\s*$', type: money}
+      dentistry_limit:  {pattern: '^(?i:dentistry sub-limit)\s+(R\s?[\d  ,.]+\d)', type: money}
+      optometry_limit:  {pattern: '^(?i:optometry sub-limit)\s+(R\s?[\d  ,.]+\d)', type: money}
+      window_opens:     {pattern: '^(?i:option change window)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      window_closes:    {pattern: '^(?i:option change window)\s+\d{1,2}\s+\w+\s+\d{4}\s+to\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      pmb:              {pattern: '^(?i:prescribed minimum benefits)\s+(\S.*?)\s*$'}
+
+  gap_cover_policy:
+    ledger: medical-aid
+    kind: gap
+    fields:
+      provider:         {pattern: '^(?i:insurer)\s+(\S.*?)\s*$'}
+      member_no:        {pattern: '^(?i:policy number)\s+(\S.*?)\s*$'}
+      main_member:      {pattern: '^(?i:principal insured)\s+(\S.*?)\s*$'}
+      premium:          {pattern: '^(?i:monthly premium)\s+(\S.*?)\s*$', type: money}
+      annual_limit:     {pattern: '^(?i:annual limit per beneficiary)\s+(\S.*?)\s*$', type: money}
+      escalation_pct:   {pattern: '^(?i:premium escalation)\s+([\d.]+)\s*%', type: pct}
+      inception_on:     {pattern: '^(?i:inception date)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      shortfall_cover:  {pattern: '^(?i:in-hospital shortfall)\s+(\S.*?)\s*$'}
+      casualty_benefit: {pattern: '^(?i:casualty benefit)\s+(R\s?[\d  ,.]+\d)', type: money}
+    # What gap cover explicitly does NOT do. These become holes on the map, and
+    # they are the whole reason for consolidating the health stack: a hole is
+    # only visible once the scheme, the gap policy and the employer benefits
+    # are read together.
+    excludes_patterns:
+      day_to_day:  '(?i:day-to-day[^\n]*NOT COVERED)'
+      chronic:     '(?i:chronic medication[^\n]*NOT COVERED)'
+
+  employee_benefit_statement:
+    ledger: employee-benefits
+    fields:
+      employer:         {pattern: '^([A-Z][A-Z&()\.\- ]{6,60})\s*$'}
+      member:           {pattern: '^(?i:member)\s+(?!number|contribution)(\S.*?)\s*$'}
+      employee_no:      {pattern: '^(?i:employee number)\s+(\S.*?)\s*$'}
+      annual_salary:    {pattern: '^(?i:annual pensionable salary)\s+(\S.*?)\s*$', type: money}
+      statement_as_at:  {pattern: '^(?i:statement as at)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      fund_name:        {pattern: '^(?i:fund)\s+(?!value)(\S.*?)\s*$'}
+      fund_member_no:   {pattern: '^(?i:member number)\s+(\S.*?)\s*$'}
+      fund_value:       {pattern: '^(?i:fund value)\s+(\S.*?)\s*$', type: money}
+      member_contrib:   {pattern: '^(?i:member contribution)\s+([\d.]+)\s*%', type: pct}
+      employer_contrib: {pattern: '^(?i:employer contribution)\s+([\d.]+)\s*%', type: pct}
+    # One statement yields several benefit records; each is its own ledger row
+    # so the cover map can reason about them independently.
+    benefits:
+      pension:
+        kind: provident
+        value_from: fund_value
+      group_life:
+        kind: group_life
+        pattern: '(?i:group life assurance)\s+(\d+)\s*times annual salary\s+(R\s?[\d  ,.]+\d)'
+      disability:
+        kind: disability
+        pattern: '(?i:lump sum disability)\s+(\d+)\s*times annual salary\s+(R\s?[\d  ,.]+\d)'
+      income_protection:
+        kind: income_protection
+        pattern: '(?i:income protection)\s+([\d.]+)%\s*of monthly salary\s+(R\s?[\d  ,.]+\d)\s*per month'
+      funeral:
+        kind: funeral
+        pattern: '(?i:funeral benefit)\s+(R\s?[\d  ,.]+\d)'

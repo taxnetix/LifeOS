@@ -306,8 +306,11 @@ def test_net_worth_is_labelled_partial_while_ledgers_are_empty(money_vault):
     finance.build()
     nw = analyse.net_worth()
     assert nw["partial"] is True
-    assert "cash position, not a net worth" in nw["note"]
     assert {"assets", "liabilities", "holdings"} <= set(nw["missing_ledgers"])
+    # The caveat must NAME what is excluded in plain words, not merely say
+    # "partial" — a reader who skips the flag must still see the omission.
+    for phrase in ("property and movables", "debt", "investments"):
+        assert phrase in nw["note"], nw["note"]
 
 
 # ── findings ─────────────────────────────────────────────────────────────────

@@ -127,11 +127,21 @@ def build(*, dry_run: bool = False, only_doc: str | None = None) -> dict:
         subject, entity = _subject_for(st, profile)
         acc_ref = account_ref(st)
 
-        acc_id = ledger.record_id(doc["doc_hash"], "header", acc_ref)
-        if acc_id not in all_accounts:
-            all_accounts[acc_id] = {
+        # An account is ONE thing evidenced by MANY statements. Keying its
+        # record by document hash would mint a fresh account per statement, and
+        # anything summing balances across accounts — net worth, most obviously —
+        # would then count the same money once per month of history.
+        #
+        # Identity is therefore the account ref, anchored to the lexicographically
+        # smallest evidencing document so the id is stable regardless of the
+        # order statements happen to be ingested in.
+        prior = all_accounts.get(acc_ref)
+        anchor = min(doc["doc_hash"], prior["source"]["doc_hash"]) if prior else doc["doc_hash"]
+        acc_id = ledger.record_id(anchor, "header", acc_ref)
+        if prior is None or anchor != prior["source"]["doc_hash"]:
+            all_accounts[acc_ref] = {
                 **_envelope(rec_id=acc_id, schema="accounts/1", subject=subject,
-                            entity=entity, doc_hash=doc["doc_hash"], locator="header",
+                            entity=entity, doc_hash=anchor, locator="header",
                             method=f"parser:{st.bank}/1", confidence=st.confidence,
                             valid_from=(st.period or {}).get("from") or clock.today()),
                 "ref": acc_ref,
@@ -143,9 +153,9 @@ def build(*, dry_run: bool = False, only_doc: str | None = None) -> dict:
                 "statement_cadence": "monthly",
             }
             if st.account_no:
-                all_accounts[acc_id]["account_no"] = st.account_no
+                all_accounts[acc_ref]["account_no"] = st.account_no
             if st.branch_code:
-                all_accounts[acc_id]["branch_code"] = st.branch_code
+                all_accounts[acc_ref]["branch_code"] = st.branch_code
 
         uncategorised = 0
         for row in st.rows:

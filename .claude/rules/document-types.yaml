@@ -60,9 +60,31 @@ types:
 
   medical_aid_certificate:
     domain: living
-    strong: ["medical scheme", "membership certificate", "main member"]
+    strong: ["medical scheme", "membership certificate", "main member",
+             "medical savings account"]
     any: ["dependant", "plan", "option", "scheme", "membership number",
-          "gap cover", "savings account", "threshold"]
+          "savings account", "threshold", "prescribed minimum benefits",
+          "self-payment gap", "above threshold", "option change window"]
+    routes_to: living
+
+  # Gap cover is NOT a medical scheme — it is short-term insurance that pays
+  # the shortfall a scheme leaves. Filing it as a scheme would make the cover
+  # map double-count hospital cover and miss that day-to-day is uncovered.
+  gap_cover_policy:
+    domain: living
+    require: ["gap cover"]
+    strong: ["gap cover", "in-hospital shortfall", "co-payment cover"]
+    any: ["policy number", "premium", "scheme rate", "annual limit",
+          "casualty benefit", "waiting period"]
+    routes_to: insurance
+
+  employee_benefit_statement:
+    domain: living
+    strong: ["employee benefit statement", "benefit statement",
+             "group life assurance", "pensionable salary"]
+    any: ["provident fund", "pension fund", "member number", "risk benefits",
+          "income protection", "funeral benefit", "employer contribution",
+          "fund value", "employee number"]
     routes_to: living
 
   payslip:

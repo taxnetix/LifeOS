@@ -3,9 +3,15 @@
   "$id": "https://lifeos.local/schemas/ledgers/policies.schema.json",
   "title": "policies/1",
   "description": "All insurance. Owner: insurance. PII: high (policy numbers).",
-  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "allOf": [
+    {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base"
+    }
+  ],
   "properties": {
-    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/policyRef" },
+    "ref": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/policyRef"
+    },
     "class": {
       "type": "string",
       "enum": [
@@ -22,38 +28,80 @@
       "type": "string",
       "description": "short_term: contents | buildings | vehicle | all_risk | portable_possessions | liability | cyber. business: key_person | buy_and_sell | contingent_liability | overheads | professional_indemnity."
     },
-    "insurer": { "type": "string", "minLength": 1 },
-    "policy_no": { "type": "string", "description": "PII: high." },
-    "life_assured_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
-    "owner_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
-    "premium": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "insurer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_no": {
+      "type": "string",
+      "description": "PII: high."
+    },
+    "life_assured_ref": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef"
+    },
+    "owner_ref": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef"
+    },
+    "premium": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money"
+    },
     "premium_frequency": {
       "type": "string",
-      "enum": ["monthly", "quarterly", "annual", "single"]
+      "enum": [
+        "monthly",
+        "quarterly",
+        "annual",
+        "single"
+      ]
     },
-    "escalation_pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
-    "sum_assured": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "escalation_pct": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent"
+    },
+    "sum_assured": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money"
+    },
     "beneficiaries": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
-          "name": { "type": "string" },
-          "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" }
+          "person_ref": {
+            "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pct": {
+            "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent"
+          }
         },
-        "required": ["pct"],
+        "required": [
+          "pct"
+        ],
         "additionalProperties": false
       }
     },
     "cession": {
       "type": "object",
       "properties": {
-        "to": { "type": "string" },
-        "kind": { "type": "string", "enum": ["security", "outright"] },
-        "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+        "to": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "security",
+            "outright"
+          ]
+        },
+        "doc_hash": {
+          "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash"
+        }
       },
-      "required": ["to", "kind"],
+      "required": [
+        "to",
+        "kind"
+      ],
       "additionalProperties": false
     },
     "waiting_periods": {
@@ -61,34 +109,72 @@
       "items": {
         "type": "object",
         "properties": {
-          "kind": { "type": "string" },
-          "months": { "type": "integer", "minimum": 0 }
+          "kind": {
+            "type": "string"
+          },
+          "months": {
+            "type": "integer",
+            "minimum": 0
+          }
         },
-        "required": ["kind", "months"],
+        "required": [
+          "kind",
+          "months"
+        ],
         "additionalProperties": false
       }
     },
-    "exclusions": { "type": "array", "items": { "type": "string" } },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "broker": {
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+        "name": {
+          "type": "string"
+        },
+        "contact": {
+          "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact"
+        }
       },
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "additionalProperties": false
     },
-    "inception_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "inception_on": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date"
+    },
     "anniversary_on": {
       "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date",
-      "description": "Drives the 45-day quote-refresh lead — C9f."
+      "description": "Drives the 45-day quote-refresh lead \u2014 C9f."
     },
     "deemed_property_s3_3_a_ii": {
       "type": "boolean",
-      "description": "Whether proceeds are deemed property in the estate under s3(3)(a)(ii) — C9e. Affects estate duty."
+      "description": "Whether proceeds are deemed property in the estate under s3(3)(a)(ii) \u2014 C9e. Affects estate duty."
     },
-    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+    "doc_hash": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash"
+    },
+    "monthly_benefit": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money",
+      "description": "Income protection and similar benefits pay a MONTHLY amount, not a lump sum. Storing R55 000/month in sum_assured would make it read as R55 000 of total cover \u2014 out by a factor of the claim duration."
+    },
+    "benefit_ceases_age": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 120,
+      "description": "Income protection typically ceases at retirement age; the gap between cessation and death matters to the cover map."
+    }
   },
-  "required": ["ref", "class", "insurer", "owner_ref"],
+  "required": [
+    "ref",
+    "class",
+    "insurer",
+    "owner_ref"
+  ],
   "unevaluatedProperties": false
 }

@@ -172,7 +172,13 @@ def net_worth() -> dict:
 
     components = []
     total_assets = total_liabs = 0
+    # Belt and braces: collapse by ref before summing, so a duplicated account
+    # row can never inflate the total even if one is written by mistake.
+    seen_refs: set[str] = set()
     for acc in accounts:
+        if acc["ref"] in seen_refs:
+            continue
+        seen_refs.add(acc["ref"])
         t = latest.get(acc["ref"])
         if not t:
             continue
@@ -187,8 +193,32 @@ def net_worth() -> dict:
         else:
             total_liabs += -cents
 
-    # assets/ holdings are populated in Phase 4; until then their absence is
-    # reported as `partial` rather than silently treated as zero.
+    for h in holdings:
+        if "value" in h:
+            total_assets += h["value"]["cents"]
+            components.append({
+                "ledger": "holdings", "record_id": h["id"],
+                "label": h.get("mandate") or h.get("platform", "holding"),
+                "ref": h.get("ref"), "as_at": h.get("value_as_at"),
+                "amount": h["value"],
+            })
+
+    for a in assets:
+        latest_val = None
+        for v in ledger.read("valuations"):
+            if v.get("asset_ref") == a.get("ref") and (
+                latest_val is None or v["as_at"] >= latest_val["as_at"]
+            ):
+                latest_val = v
+        amount = (latest_val or {}).get("value") or a.get("base_cost")
+        if amount:
+            total_assets += amount["cents"]
+            components.append({
+                "ledger": "assets", "record_id": a["id"],
+                "label": a.get("description", "asset"), "ref": a.get("ref"),
+                "as_at": (latest_val or {}).get("as_at"), "amount": amount,
+                "basis": (latest_val or {}).get("basis", "base_cost"),
+            })
 
     for liab in liabilities:
         if "balance" in liab:
@@ -203,6 +233,8 @@ def net_worth() -> dict:
                (("assets", assets), ("liabilities", liabilities), ("holdings", holdings))
                if not rows]
 
+    labels = {"assets": "property and movables", "liabilities": "debt",
+              "holdings": "investments"}
     return {
         "as_at": clock.today(),
         "assets_cents": total_assets,
@@ -211,9 +243,12 @@ def net_worth() -> dict:
         "components": components,
         "partial": bool(missing),
         "missing_ledgers": missing,
+        # A net worth that quietly omits the house or the bond is worse than
+        # none, so every empty ledger is named in the caveat rather than
+        # silently treated as zero.
         "note": (
-            "PARTIAL: " + ", ".join(missing) + " are empty, so property, investments and "
-            "debt are not included. This is a cash position, not a net worth."
+            "PARTIAL: no records in " + ", ".join(missing) + ", so "
+            + ", ".join(labels[m] for m in missing) + " are excluded."
         ) if missing else "",
     }
 
