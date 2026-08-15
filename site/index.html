@@ -56,6 +56,9 @@ body{margin:0;background:var(--bg);color:var(--fg);
   font-family:Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
 @media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+/* The header is sticky, so an anchor jump would otherwise land the section's
+   eyebrow underneath it. */
+section[id]{scroll-margin-top:78px}
 a{color:inherit}
 .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 
@@ -81,7 +84,7 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(8px)
 .btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(43,190,152,.3)}
 .btn-ghost{background:var(--card);border-color:var(--border);color:var(--fg)}
 .btn-ghost:hover{border-color:var(--brand-500);color:var(--brand-600)}
-.btn-sm{padding:9px 20px;font-size:14px}
+.btn-sm{padding:9px 20px;font-size:14px;min-height:44px}
 
 /* ── masthead ───────────────────────────────────────────────────────────── */
 .masthead{position:relative;isolation:isolate;overflow:hidden;
@@ -158,6 +161,18 @@ h2.sec{font-size:clamp(27px,3.4vw,38px);line-height:1.16;letter-spacing:-1px;
 .finding{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--brand-500);
   border-radius:0 18px 18px 0;padding:26px 30px;margin-top:22px;box-shadow:var(--shadow)}
 .finding p{margin:0;font-size:15.5px;color:var(--muted)}
+
+/* ── example downloads ─────────────────────────────────────────────────── */
+.downloads{margin-top:34px;padding:30px;border:1px solid var(--border);
+  border-radius:20px;background:var(--card-2)}
+.dl-lead{margin:0;font-size:15.5px;color:var(--muted);max-width:62ch}
+.dl-lead strong{color:var(--fg);font-weight:650}
+.dl-lead code{background:var(--card);border:1px solid var(--border);border-radius:6px;
+  padding:1px 6px;font-size:13.5px;white-space:nowrap}
+.downloads .actions{margin-top:22px}
+.dl-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+.dl-note{margin:18px 0 0;font-size:13.5px;color:var(--muted)}
 .finding strong{color:var(--fg);font-weight:600}
 .finding .q{font-size:19px;color:var(--fg);font-weight:600;letter-spacing:-.3px;
   margin:0 0 10px;line-height:1.4}
@@ -213,6 +228,40 @@ pre{background:var(--card-2);border:1px solid var(--border);border-radius:16px;
   padding:22px 24px;overflow-x:auto;font-size:14px;line-height:1.7;margin:24px 0 0}
 pre code{background:none;padding:0;color:var(--fg)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ── touch targets ────────────────────────────────────────────────────────
+   Text links default to their line-box height — 20px in the footer, well under
+   the 44px a thumb needs. Padding rather than a taller font keeps the visual
+   density while giving each link a real target. `margin:-Npx` pulls the layout
+   back so the lists do not visibly loosen. */
+@media (pointer: coarse), (max-width: 900px) {
+  footer ul a, .legal a {
+    display:inline-block; padding:12px 0; margin:-12px 0;
+  }
+  .nav nav a { padding:12px 0; margin:-12px 0; display:inline-block; }
+  .brand { padding:7px 0; margin:-7px 0; }
+  .logo-lockup { padding:34px 0; }
+}
+
+/* ── narrow phones ────────────────────────────────────────────────────────
+   Buttons go full-width so neither wraps to a second line at 320px, and the
+   generous desktop section padding halves. */
+@media (max-width: 560px) {
+  .wrap{padding:0 20px}
+  section{padding:56px 0}
+  .masthead{padding:56px 0 52px}
+  .actions{gap:12px}
+  .actions .btn{flex:1 1 100%;justify-content:center}
+  .closing{padding:48px 24px;border-radius:24px;margin:56px 0}
+  .included{padding:26px}
+  .card{padding:24px}
+  .finding{padding:22px 24px}
+  .lockup-mark{width:44px;height:44px;font-size:23px;border-radius:13px}
+  .lockup-word{font-size:32px}
+  .stats{grid-template-columns:1fr 1fr;gap:14px}
+  .stat{padding:20px}
+  pre{padding:18px;border-radius:14px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -363,6 +412,28 @@ pre code{background:none;padding:0;color:var(--fg)}
           about. A Life File that showed only what is known would be a
           comfortable lie — <strong>the gaps are the reason to read it while
           there is still time to act.</strong>
+        </p>
+      </div>
+
+      <div class="downloads">
+        <p class="dl-lead">
+          <strong>Read a real one.</strong> Both files below are unedited output
+          of <code>/life-file</code>, generated from the project's fully
+          fictional demo vault. Nobody in them exists.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="examples/life-file-tier1-first-48-hours.pdf" download>
+            <svg class="dl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+            Tier 1 — First 48 Hours
+          </a>
+          <a class="btn btn-ghost" href="examples/life-file-tier2-executor-pack.pdf" download>
+            <svg class="dl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+            Tier 2 — Executor Pack
+          </a>
+        </div>
+        <p class="dl-note">
+          PDF · 8 pages · no identifiers in tier 1, masked to last 4 in tier 2.
+          Tier 3 unmasks, so no specimen of it is published.
         </p>
       </div>
     </div>

@@ -92,6 +92,8 @@ The artefact everything points at: **a document you can hand to your family**, i
 
 No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, never the secret. Its headline section is **"What your family will NOT find"**: the unsigned will, the missing title deed, the suretyship nobody knew about. A Life File showing only what is known would be a comfortable lie. [ADR-0018](docs/adr/0018-life-file-document.md).
 
+**Read a real one.** Unedited output, generated from the fully fictional demo vault — [Tier 1](site/examples/life-file-tier1-first-48-hours.pdf) · [Tier 2](site/examples/life-file-tier2-executor-pack.pdf) · [what to look at](site/examples/README.md). Tier 3 unmasks, so no specimen of it is published.
+
 ## Packs
 
 Optional domain bundles that layer onto the core by **merge, not fork** — one codebase, many configurations, so a core fix reaches every installation.
