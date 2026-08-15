@@ -1,179 +1,252 @@
 # LifeOS
 
-A personal life-management system implemented **entirely as a Claude Code agentic system**. Not a web app. Not a backend. The repository is the product; Claude Code is the runtime; files on disk are the state.
+**Know where you stand.** Drop your bank statements, policies and tax
+certificates into a folder. LifeOS reads them, keeps track of what you have,
+and tells you what needs attention.
 
-It ingests real documents — bank statements, policy schedules, medical aid plans, tax certificates, wills, trust deeds, payslips — turns them into structured ledgers, analyses them across domains, produces dashboards and optimisation reports, remembers what it learns, and knows what to do next every time it wakes up.
+It is built for South Africa: SARS, the March to February tax year, Reg 28,
+estate duty, the Master's Office. Personal and business are treated as one
+connected picture.
 
-Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
+> **Status: finished and working.** Documents come in and get filed with a
+> record of where every number came from. Statements turn into a sorted picture
+> of your spending, a dashboard and a ranked list of things worth fixing. Your
+> medical scheme, gap cover, work benefits and personal policies get read
+> together, so you can see where you are covered twice and where you are not
+> covered at all. Tax deadlines run off dated SARS tables that flag themselves
+> when they go stale. And the estate model answers the question families
+> actually hit: not whether the estate is solvent, but whether anyone can get
+> hold of cash in the first thirty days.
 
-> **Status: all 7 phases complete.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. `/audit` proves every figure traces to a page of a real document, and `/add-domain` grows a domain the loop picks up with no changes to the orchestrator. See [the roadmap](#roadmap).
+## What you need first
 
-## The idea in one paragraph
+LifeOS runs inside **Claude Code**, Anthropic's app for letting Claude read and
+write files on your own computer. It is a different thing to the Claude website
+or the phone app. [Get Claude Code](https://claude.com/claude-code) before you
+start.
 
-Most personal-finance tools ask you to enter data. LifeOS asks you to **drop a document in a folder**. Everything else — filing it immutably, extracting it with provenance, normalising it into a ledger, noticing it contradicts something you told it last year, working out what that means for your estate liquidity — is the system's job. And it does that job on a loop that is safe to run hourly, forever, because when nothing has changed it costs almost nothing and says so.
+Once you have it, everything else is just a folder.
 
-## Quick start
+## Three steps, about ten minutes
 
-**No terminal?** [Download the ZIP](https://github.com/taxnetix/LifeOS/archive/refs/heads/main.zip), unzip it, and open the folder in **Claude Code** or **Claude CoWork**. The agents, commands and skills are files in the repository, so they are available the moment it opens — there is nothing to install or register. Run `/lifeos-init` and go.
+**1. Get the LifeOS folder.**
+[Download the ZIP](https://github.com/taxnetix/LifeOS/archive/refs/heads/main.zip)
+and unzip it, or clone it if you use git.
 
-That route skips the Python toolchain, which is what parses PDFs and statements and renders the Life File to PDF. Without it the agents still read, reason and write your vault; add the toolchain below whenever you want the deterministic parsers.
+**2. Open that folder in Claude Code.** Everything LifeOS needs is already
+inside it. Nothing to install, nothing to sign up for.
 
-**Full install:**
+**3. Type `/lifeos-init` and press enter.** Words starting with a slash are
+commands. You type them into Claude Code the same way you would type a message.
+Typing just `/` shows you the whole list.
+
+That first command asks you a few questions and sets your folder up. After
+that, put a document in `vault/inbox/` and type `/heartbeat`.
+
+### If you are comfortable with a terminal
+
+Cloning lets you add the extra tools that read PDFs and turn the Life File into
+a printable document. Everything else works fine without them.
 
 ```bash
 git clone https://github.com/taxnetix/LifeOS.git && cd LifeOS
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-dev.txt
 npm install
-bash tools/scripts/install-hooks.sh      # the vault leak guard. Do this.
+bash tools/scripts/install-hooks.sh      # stops your documents being shared. Do this.
 ```
 
-Then, in Claude Code:
+If you took the ZIP route, `install-hooks.sh` has nothing to install into. The
+safety check is a git hook, and an unzipped folder is not a git repository. If
+you later run `git init` in there, install the hook before your first commit.
+
+## Two folders, kept apart
 
 ```
-/lifeos-init      # interview, scaffold your vault, pick domains and packs
-/boot             # orient
+life-os/     THE SYSTEM   this repo. Shareable, MIT, no personal data in it.
+vault/       YOUR STUFF   your real life. Never uploaded. Stays on your machine.
 ```
 
-Drop a document in `vault/inbox/` and run `/heartbeat`.
-
-> If you took the ZIP route, `install-hooks.sh` has nothing to install into — the leak guard is a **git** hook, and an unzipped folder is not a repository. Should you later run `git init` there, install the hook before your first commit.
-
-## The two halves
-
-```
-life-os/     SYSTEM   this repo. Shareable, MIT, zero personal data.
-vault/       VAULT    your real life. Git-ignored. Never leaves your machine.
-```
-
-`$LIFEOS_VAULT` overrides the default location. Every agent resolves the vault through one resolver; nothing hardcodes a path.
+Set `$LIFEOS_VAULT` if you want your vault somewhere else. Every agent looks it
+up the same way, so nothing has a folder path baked in.
 
 ## Commands
 
 | | |
 |---|---|
-| `/lifeos-init` | Interview, scaffold the vault, select packs |
-| `/boot` | Orient: where you stand, what's next, what's needed from you |
-| `/heartbeat` | One pass of the loop. Idempotent. Safe hourly, forever |
-| `/status` · `/selftest` | System health · the full test suite and structural invariants |
-| `/ingest` | Force an inbox sweep |
-| `/readiness` | Life File score, and the shortest path to improving it |
+| `/lifeos-init` | Ask you questions, set up your folder, pick what you need |
+| `/boot` | Where you stand, what is next, what LifeOS needs from you |
+| `/heartbeat` | One pass. Safe to run as often as you like |
+| `/status` · `/selftest` | How the system is doing · run all its own tests |
+| `/ingest` | Go through the inbox now |
+| `/readiness` | Your Life File score, and the quickest way to improve it |
 | **`/life-file`** | **The document you hand your family when you die** |
-| `/dashboard` · `/optimise` | Cashflow dashboard · ranked, costed findings |
-| `/review cover` | **The consolidated health and risk map** — what no single document says |
-| `/review <domain>` | Deep review of one domain |
-| `/deadlines` | Everything due, with lead times and why it applies to you |
-| `/ask` · `/what-if` · `/life-event` | Cross-domain Q&A with citations · scenarios · cascades |
-| `/trust-review` | s7C exposure, trustee independence, compliance, separation |
-| `/install-pack` | List, install or remove an optional domain pack |
-| `/issues` | The system's own backlog on GitHub |
-| `/consolidate` · `/audit` · `/add-domain` · `/forget` | Memory ritual · provenance proof · self-extension · POPIA erasure |
+| `/dashboard` · `/optimise` | Spending dashboard · ranked, costed suggestions |
+| `/review cover` | **All your cover in one view**, which no single document gives you |
+| `/review <area>` | A proper look at one area |
+| `/deadlines` | Everything due, with how long each one takes and why it applies |
+| `/ask` · `/what-if` · `/life-event` | Ask anything · model a scenario · record a life change |
+| `/trust-review` | Section 7C, trustee independence, keeping the trust separate |
+| `/install-pack` | List, add or remove an optional area |
+| `/issues` | The system's own to-do list on GitHub |
+| `/consolidate` · `/audit` · `/add-domain` · `/forget` | Tidy its memory · prove where a number came from · add an area · delete a person's data |
 
-Full contracts: [docs/commands.md](docs/commands.md).
+Full details: [docs/commands.md](docs/commands.md).
 
 ## Meet the agents
 
-Seventeen agents, one contract. Every one is a file in [`.claude/agents/`](.claude/agents/), generated from the same seven-part charter in [templates/AGENT_CHARTER.md](templates/AGENT_CHARTER.md): what it owns, what it explicitly does *not* own, its inputs, its outputs, its state file, its cadence, and what "done" means. **Exactly one agent may write any given ledger** — a `/selftest` check parses the charters and fails if a ledger has zero owners or two.
+An agent is simply a set of written instructions for one job. There are 17 of
+them, each a file in [`.claude/agents/`](.claude/agents/), each written to the
+same template: what it looks after, what it stays out of, when it runs, and what
+counts as finished. **Only one agent can change any given record.** A test
+checks this every time and fails if two agents ever end up in charge of the same
+thing.
 
-### System agents — the machinery
+### The machinery
 
-| Agent | What it owns | Dispatched on |
+Six agents that run the system rather than your data.
+
+| Agent | What it does | Runs on |
 |---|---|---|
-| **`orchestrator`** | The loop, the queue, the cursors, the journal, cross-domain integration. The **only** component that spawns agents — domains ask, they never nest. | `/heartbeat` |
-| **`librarian`** | `inbox/` → `documents/`. Classifies, names, files immutably, dedupes by hash, indexes and routes. Never interprets — and never loses an original. | `/ingest`, any new file |
-| **`memory-keeper`** | All three memory tiers and the consolidation ritual. Promotes durable facts, expires stale ones, and **surfaces contradictions rather than resolving them**. | `/consolidate` |
-| **`meta-architect`** | The system's own structure and backlog — scaffolding, coverage audits, the agent catalogue, GitHub issues. Touches no vault data, which is what makes it safe to let it write in public. | `/add-domain`, `/issues` |
-| **`analyst`** *(service)* | Nothing. Aggregation, trend, variance, ratio, projection and scenario mathematics for whoever asks. Every figure returns with its formula and the record ids it came from. | On request |
-| **`visualiser`** *(service)* | Rendering only — self-contained HTML, markdown, CSV. Computes no figure. If it finds itself calculating, a number has escaped its provenance. | `/dashboard`, reports |
+| **`orchestrator`** | Runs each cycle and decides what happens next. The only one allowed to hand work to the others, so nothing runs behind its back. | `/heartbeat` |
+| **`librarian`** | Sorts your inbox. Files each document, names it, spots duplicates and passes it to the right agent. Never changes or deletes an original. | `/ingest`, any new file |
+| **`memory-keeper`** | Remembers what LifeOS has learned about you and drops what has gone stale. When two things contradict, it shows you both instead of picking one. | `/consolidate` |
+| **`meta-architect`** | Looks after LifeOS itself: new areas, tidy-ups, bug reports. It cannot see your documents, which is why it is the one allowed to post in public. | `/add-domain`, `/issues` |
+| **`analyst`** | Does the maths for everyone else: totals, trends, projections, what-ifs. Keeps no records of its own and shows its working every time. | On request |
+| **`visualiser`** | Builds the dashboards and reports. Each is a single file that opens in any browser with no internet needed. | `/dashboard` |
 
-### Domain agents — the life
+### Your life
 
-| Agent | What it owns | Dispatched on |
+Eleven agents, each in charge of one area.
+
+| Agent | What it looks after | Runs on |
 |---|---|---|
-| **`identity`** | People, entities and the relationship graph that ties every person to every obligation, asset and benefit elsewhere. **Every other domain depends on it** — it is what makes cross-domain analysis possible at all. | ID documents, any new person |
-| **`finance`** | Accounts, transactions, recurring payments, budgets, net worth. Carries the flagship pipeline: statements → categorised ledger → dashboard → variance → ranked findings. | Bank and card statements, `/dashboard`, `/optimise` |
-| **`living`** | The health stack (scheme **and** gap cover), employer benefits, subscriptions, digital estate, household access, leases. Gap cover lives here, not in `insurance`, because it pays what the scheme leaves. | Medical aid and benefit statements, `/review living` |
-| **`insurance`** | Every policy — life, capital disability, income protection, dread disease, funeral, short-term, business. Needs-versus-cover, duplication against group benefits, the cover map. | Policy schedules, `/review insurance` |
-| **`investments`** | RAs, preservation and occupational funds, unit trusts, shares, offshore, TFSA, crypto. Allocation drift, Reg 28 compliance, total-expense-ratio drag. | Investment statements, `/review investments` |
-| **`assets`** | Property, movables, rights, liabilities, valuations, FX. **Suretyship is a required field**, not an optional one — it is the item most often forgotten and most damaging at death. | Title deeds, bond and vehicle documents |
-| **`tax`** | The deadline calendar, medical credits, retirement-deduction headroom, TFSA limits, effective-rate tracking — for individuals, companies and trusts. Prepares, computes and flags. **Never files.** | IRP5, IT3(b), assessments, `/deadlines` |
-| **`estate`** | Wills, beneficiaries, estate duty and CGT at death, executor and Master fees, the liquidity shortfall, and the beneficiary-versus-will conflict check no single document can see. | Wills, `/review estate` |
-| **`trusts`** *(pack)* | The trust register, trustees and their independence, resolutions, beneficiaries by class and vesting, loan accounts and **s7C exposure**, distributions, the Master and SARS calendar. | Trust deeds, `/trust-review` |
-| **`final-wishes`** | Burial versus cremation, plot details, ashes, funeral contacts, and the thirty-day liquidity plan. Deliberately separate from `estate`: this is what a family reads first, and it must be answerable without a lawyer. | Deed of grave, `/life-file` |
-| **`readiness`** | The Life File checklist as a live score — every required document, present, absent or expired, and where the original is. Composes **the Life File** itself. | `/readiness`, `/life-file` |
+| **`identity`** | Everyone in the picture: you, your spouse, children, dependants and your companies, plus how they all connect. Everything else hangs off this one. | ID documents, a new person |
+| **`finance`** | Bank accounts, transactions, debit orders, budgets. Turns a pile of statements into a sorted picture of your spending. | Statements, `/dashboard`, `/optimise` |
+| **`living`** | Medical aid and gap cover, work benefits, subscriptions, online accounts, leases, and who holds your spare keys. | Medical and benefit statements |
+| **`insurance`** | Every policy you hold: life, disability, income protection, dread disease, funeral, car and home. Finds where you are covered twice and where you are not covered at all. | Policy schedules, `/review insurance` |
+| **`investments`** | Retirement annuities, pension and provident funds, unit trusts, shares, offshore, tax-free savings and crypto. Watches what the fees cost you. | Investment statements |
+| **`assets`** | Property, cars, valuables, and everything you owe. Including any surety you have signed, which is the one people forget and the one that hurts most. | Title deeds, bond and vehicle papers |
+| **`tax`** | Deadlines, medical credits, how much more you can still put into retirement, tax-free savings limits. It gets you ready. It does not file anything. | IRP5, IT3(b), assessments, `/deadlines` |
+| **`estate`** | Your will, who inherits what, what winding up the estate costs, and whether your policy beneficiaries match your will. | Wills, `/review estate` |
+| **`trusts`** | Trustees, resolutions, beneficiaries, loan accounts and the yearly section 7C bill. Optional. Add it only if you have a trust. | Trust deeds, `/trust-review` |
+| **`final-wishes`** | Burial or cremation, the plot, funeral contacts, and how your family gets hold of cash in the first month. | `/life-file` |
+| **`readiness`** | Scores how ready your paperwork is, says what is missing, and writes the Life File. | `/readiness`, `/life-file` |
 
-Every agent ends its run by answering three questions — *what do I now know that I didn't; what is still missing; what would make me more useful next time?* — and those answers become work items and memory candidates. Full charters and the authoritative ledger-ownership table: [docs/agent-catalogue.md](docs/agent-catalogue.md).
+Every agent finishes by answering three questions: what do I now know that I
+did not, what is still missing, and what would make me more useful next time.
+Those answers become the next round of work. Full details:
+[docs/agent-catalogue.md](docs/agent-catalogue.md).
 
 ## What makes it different
 
-**It runs on a loop, not on demand.** SENSE is a Python script, not a reasoning step, so an idle heartbeat is milliseconds plus one short turn. The system notices an elapsed cadence, an expiring policy, a stale rulebook — not just a new file.
+**It checks in on its own.** You do not have to remember to run it. It spots a
+policy about to expire or a deadline coming up, not just new files. When
+nothing has changed it says so and stops, which costs almost nothing.
 
-**Every number traces to a page.** Each record carries its source document hash, its exact locator, the tool that extracted it and a confidence. Below the ledger's confidence floor a record does not enter the ledger at all — it becomes a question. `/audit` walks any figure in any report back to a page of a real document.
+**Every number shows its source.** Take any figure in any report and you can
+see the document it came from, down to the page. When LifeOS is not confident
+it read something properly, it asks you rather than guessing. `/audit` walks any
+number back to the page it came off.
 
-**Unknown is a first-class answer.** There is a gaps register. No placeholders, no plausible guesses, no zero meaning "we didn't look".
+**It admits what it does not know.** Anything missing goes on a list of gaps.
+You will not find an invented figure, or a zero sitting where nobody checked.
 
-**Nothing personal leaves the machine.** A `PreToolUse` hook blocks any outbound call — web, `curl`, or `gh` — carrying an SA ID number, an account number, or a name from your profile. It is a mechanism, not a policy, so it holds even when an agent is wrong.
+**Your details stay on your computer.** A built-in guard blocks anything going
+out that contains an ID number, an account number or a name from your profile.
+The guard is code, so it still works when the AI gets something wrong.
 
-**It maintains itself.** Agents file GitHub issues about the *system* — a bank changed its statement layout, a tax table is past its refresh interval — never about your life. That boundary is enforced by the same hook.
+**It reports its own bugs.** When a bank changes its statement layout or a tax
+table goes out of date, LifeOS raises an issue about *itself* on GitHub. Those
+issues never mention anything about you, and the same guard enforces that.
 
-**It never states a tax rate from memory.** Rates, thresholds and abatements live in dated rulebooks that carry a source and a `verified` flag. The ones shipped are marked unverified — written from memory, not checked against SARS — so every figure built on them arrives with that caveat attached. The system reports its own rulebooks as a year out of date, because they are.
+**It never quotes a tax rate from memory.** Rates and thresholds live in dated
+files that say where they came from and whether a human has checked them. The
+ones shipped are marked unchecked, written from memory rather than confirmed
+against SARS, so anything built on them arrives with that warning attached.
+LifeOS will tell you its own tax tables are a year out of date, because they
+are.
 
-**It sees what no single document says.** The medical scheme covers hospital, the gap policy covers the shortfall it leaves, the employer covers part of your income, and a personal policy covers a part that may not stack with it. Each document is silent about the others. `/review cover` reads them together and names the duplication, the cover that ends with your job, and the hole where day-to-day care falls between the two.
-
-**It can grow itself.** `/add-domain` scaffolds a new domain from the charter template, and the next heartbeat picks it up with no changes to the orchestrator.
+**It sees what no single document says.** Your medical scheme covers hospital.
+Your gap policy covers what the scheme leaves. Your employer covers part of your
+income, and a personal policy covers a part that may not stack with it. None of
+those documents mentions the others. `/review cover` reads them together.
 
 ## The Life File
 
-The artefact everything points at: **a document you can hand to your family**, in three tiers.
+The main thing LifeOS makes: **a document you can hand to your family.** It
+comes in three versions, depending on who is reading.
 
-| Tier | For | Identifiers |
+| Version | Who it is for | Numbers shown |
 |---|---|---|
-| First 48 Hours *(default)* | whoever finds it | none |
-| Executor Pack | executor, spouse, attorney | masked |
-| Sealed Annexure | the executor, on death | unmasked, explicit request only |
+| First 48 Hours *(default)* | whoever finds it | none at all |
+| Executor Pack | executor, spouse, attorney | last 4 digits only |
+| Sealed Annexure | the executor, on death | in full, and only if asked for by name |
 
-No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, never the secret. Its headline section is **"What your family will NOT find"**: the unsigned will, the missing title deed, the suretyship nobody knew about. A Life File showing only what is known would be a comfortable lie. [ADR-0018](docs/adr/0018-life-file-document.md).
+No passwords, PINs or safe codes at any version. LifeOS says *where* a
+credential is kept, never what it is. Its first section is **"What your family
+will NOT find"**: the will you never signed, the missing title deed, the surety
+nobody knew about. Listing only the sorted parts would give your family false
+comfort. [ADR-0018](docs/adr/0018-life-file-document.md).
 
-**Read a real one.** Straight out of `/life-file`, with every name and figure invented — [Tier 1](site/examples/life-file-tier1-first-48-hours.pdf) · [Tier 2](site/examples/life-file-tier2-executor-pack.pdf) · [about these examples](site/examples/README.md).
+**Have a look at a real one.** Straight out of LifeOS, built from a made-up
+vault: [Tier 1](site/examples/life-file-tier1-first-48-hours.pdf) ·
+[Tier 2](site/examples/life-file-tier2-executor-pack.pdf) ·
+[what to look at](site/examples/README.md). Tier 3 shows full numbers, so there
+is no published example of it.
 
-## Packs
+## Optional areas
 
-Optional domain bundles that layer onto the core by **merge, not fork** — one codebase, many configurations, so a core fix reaches every installation.
+Extra bundles that layer onto the core rather than forking it, so one fix
+reaches every installation.
 
 ```
 /install-pack install trusts
 ```
 
-`trusts` ships first: the trust register, trustees and their independence, resolutions, beneficiaries by class and vesting, loan accounts and **s7C exposure**, distributions and their tax attribution, and the Master and SARS compliance calendar. A pack installs *capability, never data* — your colleague gets the machinery and none of your records. [ADR-0019](docs/adr/0019-packs-merge-not-fork.md).
+`trusts` is the first: the trust register, trustees and their independence,
+resolutions, beneficiaries, loan accounts, **section 7C**, distributions, and
+the Master and SARS calendar. Adding a pack gives you the machinery and none of
+anyone else's records. [ADR-0019](docs/adr/0019-packs-merge-not-fork.md).
 
 ## Roadmap
 
 | Phase | | Status |
 |---|---|---|
-| 0 | Architecture, agent catalogue, schemas, ADRs | ✅ |
-| 1 | Skeleton and spine — loop, hooks, vault, 4 system agents | ✅ |
-| 2 | Ingestion, provenance, readiness, the Life File | ✅ |
-| 3 | Financial flagship — statements → dashboard → optimisation | ✅ |
-| 4 | Cover and wealth — insurance, medical, investments, gap analysis | ✅ |
-| 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | ✅ |
-| 6 | Trusts pack, installable standalone | ✅ |
-| 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | ✅ |
+| 0 | Design, agent list, record shapes, decisions | Done |
+| 1 | The loop, the safety hooks, the vault, 4 system agents | Done |
+| 2 | Reading documents, the readiness score, the Life File | Done |
+| 3 | Money: statements to dashboard to suggestions | Done |
+| 4 | Cover and savings: insurance, medical, investments, the gaps | Done |
+| 5 | Tax and estate: SARS tables, duty and cash-in-30-days | Done |
+| 6 | Trusts, installable on its own | Done |
+| 7 | `/ask`, `/what-if`, life events, memory, adding your own areas | Done |
 
 ## IntelliTax
 
-LifeOS deliberately never files. It reads documents, keeps ledgers, computes headroom and tracks deadlines — then says *this needs a registered practitioner*. [IntelliTax](https://www.intellitax.co.za) is where that boundary can be crossed deliberately, over its GraphQL API, its MCP server, or agent-to-agent.
+LifeOS never submits anything to SARS. It reads documents, keeps records, works
+out the numbers and tracks deadlines, then tells you when you need a registered
+practitioner. [IntelliTax](https://www.intellitax.co.za) is where that part
+happens, over its API, its MCP server, or agent to agent.
 
-The [`intellitax` skill](.claude/skills/intellitax/SKILL.md) documents the seam and what it would require: an account, an active subscription, billing, a service account and an API key. **No IntelliTax client ships with LifeOS** — it is a documented integration path, not a shipped feature.
+The [`intellitax` skill](.claude/skills/intellitax/SKILL.md) describes how the
+connection would work and what it would need: an account, a subscription,
+billing and an API key. **There is no IntelliTax code inside LifeOS today.** It
+is a documented path, not a shipped feature.
 
 Site: **<https://taxnetix.github.io/LifeOS/>**
 
 ## Documentation
 
-[docs/README.md](docs/README.md) is the reading order. Start with [architecture](docs/architecture.md) and [loop](docs/loop.md); the [18 ADRs](docs/adr/README.md) record every decision that would be expensive to reverse.
+[docs/README.md](docs/README.md) tells you what to read in what order. Start
+with [architecture](docs/architecture.md) and [the loop](docs/loop.md). The
+[18 decision records](docs/adr/README.md) explain every choice that would be
+expensive to undo.
 
 ## Safety
 
-Read [SECURITY.md](SECURITY.md) before putting real documents in a vault.
+Read [SECURITY.md](SECURITY.md) before you put real documents in a vault.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE). The licence covers the system. Your vault is yours.
+MIT. See [LICENSE](LICENSE). The licence covers the system. Your vault is
+yours.
