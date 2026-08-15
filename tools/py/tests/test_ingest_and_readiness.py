@@ -305,7 +305,13 @@ def test_gaps_section_is_present_and_named_bluntly(loaded):
     assert "will <em>not</em> find" in doc
     assert "comfortable lie" in doc
     # It must sit near the front, not be buried in an appendix.
-    assert doc.index("comfortable lie") < len(doc) // 2
+    #
+    # Measured over the body, not the whole document: the stylesheet is inlined
+    # in <head> and is a large fraction of a short document, so a doc-relative
+    # index moves whenever the CSS changes even though nothing the reader sees
+    # has moved at all.
+    body = doc[doc.index("<body>"):]
+    assert body.index("comfortable lie") < len(body) // 2
 
 
 def test_life_file_reports_the_score_it_was_built_from(loaded):

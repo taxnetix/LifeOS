@@ -14,8 +14,14 @@ Most personal-finance tools ask you to enter data. LifeOS asks you to **drop a d
 
 ## Quick start
 
+**No terminal?** [Download the ZIP](https://github.com/taxnetix/LifeOS/archive/refs/heads/main.zip), unzip it, and open the folder in **Claude Code** or **Claude CoWork**. The agents, commands and skills are files in the repository, so they are available the moment it opens — there is nothing to install or register. Run `/lifeos-init` and go.
+
+That route skips the Python toolchain, which is what parses PDFs and statements and renders the Life File to PDF. Without it the agents still read, reason and write your vault; add the toolchain below whenever you want the deterministic parsers.
+
+**Full install:**
+
 ```bash
-git clone <this repo> && cd life-os
+git clone https://github.com/taxnetix/LifeOS.git && cd LifeOS
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-dev.txt
 npm install
 bash tools/scripts/install-hooks.sh      # the vault leak guard. Do this.
@@ -29,6 +35,8 @@ Then, in Claude Code:
 ```
 
 Drop a document in `vault/inbox/` and run `/heartbeat`.
+
+> If you took the ZIP route, `install-hooks.sh` has nothing to install into — the leak guard is a **git** hook, and an unzipped folder is not a repository. Should you later run `git init` there, install the hook before your first commit.
 
 ## The two halves
 

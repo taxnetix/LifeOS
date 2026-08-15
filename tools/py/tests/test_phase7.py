@@ -27,8 +27,7 @@ def full_vault(vault_dir, frozen_clock):
         "entities:\n  - {ref: ent_trust, name: The Sample Family Trust, form: trust}\n"
         "domains: {finance: true, estate: true, trusts: true, readiness: true}\n"
     )
-    from lifeos import (audit, classify, cover, finance, forget, ingest, ledger,
-                        memory, readiness, rules)
+    from lifeos import audit, classify, cover, finance, forget, ingest, ledger, memory, readiness, rules
     for m in (readiness, classify, rules, ledger, ingest, cover, finance, audit,
               memory, forget):
         importlib.reload(m)
@@ -128,7 +127,8 @@ def test_scaffolding_produces_a_domain_the_system_already_understands(tmp_path,
     shutil.copytree(REPO / "templates" / "schemas", root / "templates" / "schemas",
                     dirs_exist_ok=True)
 
-    from lifeos import scaffold, vault as vm
+    from lifeos import scaffold
+    from lifeos import vault as vm
     monkeypatch.setattr(vm, "repo_root", lambda: root)
     importlib.reload(scaffold)
     monkeypatch.setattr(scaffold, "CHARTER", root / "templates" / "AGENT_CHARTER.md")
@@ -154,7 +154,8 @@ def test_scaffolding_never_clobbers(tmp_path, monkeypatch, vault_dir, frozen_clo
     root = tmp_path / "repo"
     (root / ".claude" / "agents").mkdir(parents=True)
     (root / ".claude" / "agents" / "taken.md").write_text("existing")
-    from lifeos import scaffold, vault as vm
+    from lifeos import scaffold
+    from lifeos import vault as vm
     monkeypatch.setattr(vm, "repo_root", lambda: root)
     importlib.reload(scaffold)
     with pytest.raises(scaffold.ScaffoldError, match="already exists"):

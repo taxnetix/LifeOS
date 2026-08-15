@@ -173,6 +173,24 @@ h2.sec{font-size:clamp(27px,3.4vw,38px);line-height:1.16;letter-spacing:-1px;
 .dl-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;flex:none}
 .dl-note{margin:18px 0 0;font-size:13.5px;color:var(--muted)}
+
+/* ── two install routes ────────────────────────────────────────────────── */
+.routes{display:grid;gap:20px;margin-top:34px}
+@media (min-width:900px){.routes{grid-template-columns:1fr 1fr;align-items:start}}
+/* min-width:0 — a grid item defaults to min-width:auto, so the <pre> inside
+   the second route would otherwise force its column wider than 1fr. */
+.route{border:1px solid var(--border);border-radius:20px;padding:28px;
+  background:var(--card);min-width:0}
+.route-n{margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--brand-500)}
+.route h3{margin:0 0 10px;font-size:19px;letter-spacing:-.3px}
+.route p{margin:0 0 18px;font-size:15px;color:var(--muted)}
+/* Sized so the longest line — the git clone — fits the column without a
+   horizontal scroll the reader has to discover. */
+.route pre{margin:0;font-size:12.5px;line-height:1.75}
+.route-note{margin:16px 0 0!important;font-size:13.5px}
+.route-note code{background:var(--card-2);border:1px solid var(--border);border-radius:6px;
+  padding:1px 6px;font-size:13px;white-space:nowrap}
 .finding strong{color:var(--fg);font-weight:600}
 .finding .q{font-size:19px;color:var(--fg);font-weight:600;letter-spacing:-.3px;
   margin:0 0 10px;line-height:1.4}
@@ -563,20 +581,50 @@ pre code{background:none;padding:0;color:var(--fg)}
   <section id="open">
     <div class="wrap">
       <p class="eyebrow">Open source</p>
-      <h2 class="sec">Clone it, point it at a folder, drop in a document</h2>
+      <h2 class="sec">Download it or clone it, then drop in a document</h2>
       <p class="lead">
         MIT licensed. The system repository holds zero personal data — your vault
         is a separate, git-ignored directory, and a pre-commit hook refuses to
         let the two meet.
       </p>
 
-<pre><code>git clone https://github.com/taxnetix/LifeOS.git &amp;&amp; cd LifeOS
-python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt
-npm install &amp;&amp; bash tools/scripts/install-hooks.sh
+      <div class="routes">
+        <div class="route">
+          <p class="route-n">No terminal</p>
+          <h3>Download it and open the folder</h3>
+          <p>
+            Unzip it and open the folder in <strong>Claude Code</strong> or
+            <strong>Claude CoWork</strong>. The agents, commands and skills are
+            just files in the repository, so they are there the moment it opens
+            — nothing to install or register.
+          </p>
+          <a class="btn btn-primary" href="https://github.com/taxnetix/LifeOS/archive/refs/heads/main.zip">
+            <svg class="dl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+            Download ZIP
+          </a>
+          <p class="route-note">
+            Run <code>/lifeos-init</code> first. The Python tools need the setup
+            on the right for parsing and PDFs; without them the agents still
+            read, reason and write the vault.
+          </p>
+        </div>
+
+        <div class="route">
+          <p class="route-n">Full install</p>
+          <h3>Clone it, with the toolchain</h3>
+<pre><code>git clone https://github.com/taxnetix/LifeOS.git
+cd LifeOS
+
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+npm install
+bash tools/scripts/install-hooks.sh   # leak guard
 
 # then, in Claude Code
-/lifeos-init      # interview, scaffold your vault, pick domains and packs
-/heartbeat        # one pass of the loop — idempotent, safe hourly, forever</code></pre>
+/lifeos-init    # scaffold your vault
+/heartbeat      # one pass — idempotent, forever</code></pre>
+        </div>
+      </div>
 
       <div class="chips">
         <span class="chip">Claude Code native</span>

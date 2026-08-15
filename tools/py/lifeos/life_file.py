@@ -122,6 +122,7 @@ def s_cover(ctx: Ctx) -> str:
     return f"""
 <section class="cover">
   {seal}
+  <div class="lockup"><span class="mark">L</span><span class="word">LifeOS</span></div>
   <div class="kicker">Life File · Tier {ctx.tier} · {e(ctx.tier_name)}</div>
   <h1>{e(who)}</h1>
   <p class="lede">Everything my family needs if I die.</p>
@@ -417,55 +418,104 @@ def s_footer(ctx: Ctx) -> str:
 </section>"""
 
 
+# Styled to match the LifeOS/IntelliTax site, with print taking precedence
+# wherever the two disagree.
+#
+# The site's light mode is white with green accents, and that is also the
+# print-safe reading: many printers drop background graphics by default, so a
+# masthead of white text on a brand gradient would come out white-on-white and
+# disappear. In a document whose entire purpose is being found and read on the
+# worst day of someone's life, that is not a cosmetic risk. So the gradient is
+# decorative only — the lockup mark and a hairline rule — and every word on
+# every page is dark ink on white.
+#
+# The dark palette is not offered at all. This is paper.
 CSS = """
 @page { size: A4; margin: 18mm 16mm 20mm; @bottom-center {
   content: "Life File — page " counter(page) " of " counter(pages);
-  font: 8pt Helvetica, sans-serif; color: #888; } }
+  font: 8pt Helvetica, sans-serif; color: #9a9a9a; letter-spacing: 0.2pt; } }
 * { box-sizing: border-box; }
-body { font: 10.5pt/1.5 Helvetica, Arial, sans-serif; color: #1a1a1a; margin: 0; }
-h1 { font-size: 26pt; margin: 2mm 0 1mm; letter-spacing: -0.4pt; }
-h2 { font-size: 14pt; margin: 8mm 0 3mm; padding-bottom: 1.5mm;
-     border-bottom: 2px solid #1a1a1a; }
-h3 { font-size: 11pt; margin: 5mm 0 2mm; color: #333; }
+body { font: 10.5pt/1.55 Poppins, Helvetica, Arial, sans-serif; color: #252525;
+       margin: 0; }
+h1 { font-size: 27pt; margin: 3mm 0 1.5mm; letter-spacing: -0.7pt;
+     font-weight: 700; line-height: 1.08; }
+h2 { font-size: 13.5pt; margin: 9mm 0 3mm; padding-bottom: 2mm; font-weight: 650;
+     letter-spacing: -0.3pt; border-bottom: 1px solid #e5e5e5; }
+h3 { font-size: 10.5pt; margin: 5mm 0 2mm; color: #252525; font-weight: 650;
+     letter-spacing: -0.1pt; }
 p { margin: 0 0 2.5mm; }
+strong { font-weight: 650; }
 section.pagebreak { break-before: page; }
-.cover { border-bottom: 3px solid #1a1a1a; padding-bottom: 6mm; margin-bottom: 4mm; }
-.kicker { font-size: 8.5pt; letter-spacing: 1.4pt; text-transform: uppercase; color: #777; }
-.lede { font-size: 12pt; color: #444; margin-bottom: 4mm; }
-.lede-sm { font-size: 10pt; color: #555; font-style: italic; }
-.scorebox { display: inline-block; padding: 3mm 6mm; border-radius: 2mm;
-            margin: 2mm 0 4mm; border: 1.5px solid; }
-.scorebox .num { font-size: 22pt; font-weight: bold; line-height: 1; }
-.scorebox .lbl { font-size: 8pt; letter-spacing: 1pt; text-transform: uppercase; }
-.scorebox.good { border-color: #1a7f37; color: #1a7f37; background: #f0f9f2; }
-.scorebox.mid  { border-color: #9a6700; color: #9a6700; background: #fdf8ee; }
-.scorebox.poor { border-color: #a40e26; color: #a40e26; background: #fdf0f2; }
-.seal { background: #a40e26; color: #fff; padding: 2mm 4mm; font-weight: bold;
-        letter-spacing: 1.5pt; font-size: 9pt; margin-bottom: 4mm; }
+/* A heading stranded at the foot of a page, or a five-row key-value table
+   split across one, costs a reader real time when they are least able to
+   spend it. Long tables (documents, policies) are still allowed to break. */
+h2, h3 { break-after: avoid; }
+table.meta, table.kv, .scorebox, .missing, .callout { break-inside: avoid; }
+table.tbl tr { break-inside: avoid; }
+
+/* ── masthead ─────────────────────────────────────────────────────────────
+   The lockup from the site. The mark is gradient-filled and the wordmark is
+   ink, so the identity survives a printer that refuses the gradient. */
+.lockup { margin-bottom: 5mm; }
+.lockup .mark { display: inline-block; width: 8mm; height: 8mm; border-radius: 2.2mm;
+        background: linear-gradient(142.58deg, #2bbe98 0%, #205356 100%);
+        color: #fff; font-weight: 700; font-size: 12pt; text-align: center;
+        line-height: 8mm; vertical-align: middle; }
+.lockup .word { display: inline-block; vertical-align: middle; margin-left: 2.5mm;
+        font-size: 15pt; font-weight: 700; letter-spacing: -0.5pt; }
+.cover { padding-bottom: 6mm; margin-bottom: 4mm;
+         border-bottom: 2.5pt solid #205356; }
+.kicker { font-size: 8pt; letter-spacing: 1.6pt; text-transform: uppercase;
+          color: #2b9e80; font-weight: 650; }
+.lede { font-size: 11.5pt; color: #6f6f6f; margin-bottom: 4mm; }
+.lede-sm { font-size: 10pt; color: #6f6f6f; font-style: italic; }
+
+/* ── stat card, after the site's .stat ────────────────────────────────── */
+.scorebox { display: inline-block; padding: 3.5mm 7mm; border-radius: 3.5mm;
+            margin: 3mm 0 4mm; border: 1px solid; }
+.scorebox .num { font-size: 23pt; font-weight: 700; line-height: 1;
+                 letter-spacing: -0.8pt; }
+.scorebox .lbl { font-size: 7.5pt; letter-spacing: 1.3pt; text-transform: uppercase;
+                 font-weight: 650; margin-top: 1mm; }
+.scorebox.good { border-color: #bfe6d8; color: #1c7d5f; background: #f2fbf7; }
+.scorebox.mid  { border-color: #ecd9ae; color: #8a5a00; background: #fdf8ee; }
+.scorebox.poor { border-color: #f2c9d1; color: #a40e26; background: #fdf3f5; }
+.seal { background: #a40e26; color: #fff; padding: 2.5mm 4mm; font-weight: 700;
+        letter-spacing: 1.5pt; font-size: 9pt; margin-bottom: 4mm;
+        border-radius: 2mm; }
+
+/* ── tables ───────────────────────────────────────────────────────────── */
 table { border-collapse: collapse; width: 100%; margin: 2mm 0 3mm; }
-table.meta th, table.kv th { text-align: left; width: 42%; color: #666;
-        font-weight: normal; padding: 1.2mm 4mm 1.2mm 0; vertical-align: top; }
-table.meta td, table.kv td { padding: 1.2mm 0; vertical-align: top; }
-table.tbl th { text-align: left; font-size: 8.5pt; text-transform: uppercase;
-        letter-spacing: 0.5pt; color: #666; border-bottom: 1px solid #999;
-        padding: 1.5mm 3mm 1.5mm 0; }
-table.tbl td { padding: 1.5mm 3mm 1.5mm 0; border-bottom: 0.4px solid #e0e0e0;
+table.meta th, table.kv th { text-align: left; width: 42%; color: #6f6f6f;
+        font-weight: normal; padding: 1.4mm 4mm 1.4mm 0; vertical-align: top; }
+table.meta td, table.kv td { padding: 1.4mm 0; vertical-align: top; }
+table.tbl th { text-align: left; font-size: 7.5pt; text-transform: uppercase;
+        letter-spacing: 1pt; color: #8a8a8a; font-weight: 650;
+        border-bottom: 1px solid #d4d4d4; padding: 1.5mm 3mm 2mm 0; }
+table.tbl td { padding: 1.8mm 3mm 1.8mm 0; border-bottom: 0.4px solid #ececec;
         vertical-align: top; }
 td.n, th.n { text-align: right; }
-.mono { font-family: "SF Mono", Menlo, monospace; font-size: 8pt; color: #555;
+.mono { font-family: "SF Mono", Menlo, monospace; font-size: 8pt; color: #6f6f6f;
         word-break: break-all; }
-.missing { background: #fdf0f2; border-left: 3px solid #a40e26;
-           padding: 2.5mm 4mm; margin: 2mm 0 3mm; }
-.missing-inline { color: #a40e26; font-weight: bold; }
-.callout { background: #f4f6f8; border-left: 3px solid #555; padding: 3mm 4mm;
-           margin: 3mm 0; font-size: 10pt; }
+
+/* ── callouts, after the site's .finding ──────────────────────────────── */
+.missing { background: #fdf3f5; border: 1px solid #f2dbe1; border-left: 3.5pt solid #a40e26;
+           border-radius: 0 3mm 3mm 0; padding: 3mm 4.5mm; margin: 2.5mm 0 3mm; }
+.missing-inline { color: #a40e26; font-weight: 650; }
+.callout { background: #f7f7f7; border: 1px solid #e5e5e5; border-left: 3.5pt solid #2bbe98;
+           border-radius: 0 3mm 3mm 0; padding: 3mm 4.5mm; margin: 3mm 0;
+           font-size: 10pt; }
 ul.gaps { padding-left: 5mm; } ul.gaps li { margin-bottom: 2.5mm; }
 ol.fix { padding-left: 5mm; } ol.fix li { margin-bottom: 1.5mm; }
-.det { color: #666; font-size: 9pt; }
-.big { font-size: 20pt; font-weight: bold; color: #1a7f37; margin: 2mm 0; }
-.supersede { font-size: 9pt; color: #777; font-style: italic; }
+.det { color: #6f6f6f; font-size: 9pt; }
+/* The reachable-cash headline. Brand deep teal rather than a signal green —
+   this figure is the answer to a question, not a pass mark. */
+.big { font-size: 21pt; font-weight: 700; color: #205356; margin: 2.5mm 0;
+       letter-spacing: -0.6pt; }
+.supersede { font-size: 9pt; color: #8a8a8a; font-style: italic; }
 .footer { break-before: page; }
-.footer p { font-size: 9.5pt; color: #444; }
+.footer p { font-size: 9.5pt; color: #6f6f6f; }
+.footer strong { color: #252525; }
 """
 
 
