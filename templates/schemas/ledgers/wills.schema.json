@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/wills.schema.json",
+  "title": "wills/1",
+  "description": "Wills, living wills, further wishes, prior estates and litigation. Owner: estate. PII: high.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "testator_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "kind": {
+      "type": "string",
+      "enum": ["will", "living_will", "wishes", "prior_estate", "litigation"]
+    },
+    "signed": { "type": "boolean", "description": "An unsigned will is the single highest-consequence readiness gap." },
+    "signed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "is_joint": { "type": "boolean" },
+    "executor": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "custodian": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "original_location": {
+      "type": "string",
+      "description": "Where the signed original physically is. A will nobody can find is a will that does not exist."
+    },
+    "review_triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Life events that should force a review — consumed by /life-event."
+    },
+    "court": {
+      "type": "object",
+      "description": "kind=litigation: courts must be notified on death — G8.",
+      "properties": {
+        "name": { "type": "string" },
+        "case_no": { "type": "string" },
+        "matter": { "type": "string" }
+      },
+      "required": ["name", "case_no"],
+      "additionalProperties": false
+    },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "testator_ref", "kind"],
+  "if": { "properties": { "kind": { "const": "will" } }, "required": ["kind"] },
+  "then": { "required": ["signed"] },
+  "unevaluatedProperties": false
+}

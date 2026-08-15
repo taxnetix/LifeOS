@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/memory/long-term-front-matter.schema.json",
+  "title": "long-term-front-matter/1",
+  "description": "YAML front matter of $VAULT/memory/long/*.md. The body is free markdown. Memory files are human-readable and hand-editable — you will edit them, and a consolidation that mangles your edits is a failed run.",
+  "type": "object",
+  "properties": {
+    "topic": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "preference",
+        "risk_appetite",
+        "standing_instruction",
+        "decision",
+        "structural_fact",
+        "lesson",
+        "pattern"
+      ]
+    },
+    "since": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date",
+      "description": "When this became true. Relative dates are always converted to absolute."
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence": {
+      "type": "array",
+      "description": "Journal entries, decisions or records this was promoted from.",
+      "items": { "type": "string" }
+    },
+    "contradicts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unresolved conflicts with other memory files. Present means the human still owes a decision."
+    },
+    "in_claude_md": {
+      "type": "boolean",
+      "description": "Whether this appears in the machine-maintained block of CLAUDE.md, so every future session starts informed."
+    },
+    "hand_edited": {
+      "type": "boolean",
+      "description": "Set when the human has edited the file. /consolidate must preserve the edit rather than overwrite it."
+    }
+  },
+  "required": ["topic", "kind", "since", "confidence"],
+  "additionalProperties": false
+}

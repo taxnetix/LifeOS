@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/memory/memory-audit.schema.json",
+  "title": "memory-audit/1",
+  "description": "$VAULT/memory/audit.jsonl — one line per promotion, demotion, expiry, merge or flag. Writer: memory-keeper. This is what stops memory being a black box.",
+  "type": "object",
+  "properties": {
+    "at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "action": {
+      "type": "string",
+      "enum": ["promote", "demote", "expire", "merge", "flag_contradiction", "create", "hand_edit_preserved"]
+    },
+    "from_tier": { "type": "string", "enum": ["short", "medium", "long", "journal", "none"] },
+    "to_tier": { "type": "string", "enum": ["short", "medium", "long", "none"] },
+    "file": { "type": "string", "description": "Vault-relative path of the memory file." },
+    "statement": {
+      "type": "string",
+      "description": "The compressed fact, as written."
+    },
+    "reason": { "type": "string", "minLength": 1 },
+    "contradicts": {
+      "type": "string",
+      "description": "Set on flag_contradiction. Contradictions are SURFACED, never silently resolved — the resolution might be 'the preference was wrong' or 'this was an exception', and only the human knows which."
+    },
+    "run_id": { "type": "string" }
+  },
+  "required": ["at", "action", "reason", "run_id"],
+  "additionalProperties": false
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/trustees.schema.json",
+  "title": "trustees/1",
+  "description": "Trustees, appointments, resolutions and minutes. Owner: trusts. Absence of an independent trustee is flagged — H5.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "trust_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/trustRef" },
+    "kind": {
+      "type": "string",
+      "enum": ["appointment", "resignation", "resolution", "minutes"]
+    },
+    "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "name": { "type": "string" },
+    "role": { "type": "string", "enum": ["trustee", "chair", "independent", "alternate"] },
+    "independent": { "type": "boolean" },
+    "appointed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "resigned_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "meeting_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "subject": { "type": "string", "description": "Resolution or minute subject." },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["trust_ref", "kind"],
+  "unevaluatedProperties": false
+}

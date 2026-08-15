@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/employee-benefits.schema.json",
+  "title": "employee-benefits/1",
+  "description": "Employer-provided benefits. Owner: living. Cross-referenced against personal cover in policies to find duplication and gaps — taxonomy B2e.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "employer": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "pension",
+        "provident",
+        "group_life",
+        "income_protection",
+        "funeral",
+        "dread_disease",
+        "disability",
+        "other_risk"
+      ]
+    },
+    "member_no": { "type": "string", "description": "PII: high." },
+    "benefit": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "multiple_of_salary": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Used when cover is expressed as a multiple rather than a rand amount."
+    },
+    "contribution": {
+      "type": "object",
+      "properties": {
+        "employee": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "employer": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" }
+      },
+      "additionalProperties": false
+    },
+    "beneficiaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+          "name": { "type": "string" },
+          "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" }
+        },
+        "required": ["pct"],
+        "additionalProperties": false
+      }
+    },
+    "statement_as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "person_ref", "employer", "kind"],
+  "unevaluatedProperties": false
+}

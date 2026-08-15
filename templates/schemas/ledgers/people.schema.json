@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/people.schema.json",
+  "title": "people/1",
+  "description": "Individuals. Owner: identity. Contains high-sensitivity PII — see docs/data-dictionary.md §6.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "full_name": { "type": "string", "minLength": 1 },
+    "former_names": { "type": "array", "items": { "type": "string" } },
+    "relation": {
+      "type": "string",
+      "enum": ["self", "spouse", "child", "parent", "dependant", "other"]
+    },
+    "born_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "deceased_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "id_number": {
+      "type": "string",
+      "pattern": "^\\d{13}$",
+      "description": "SA ID. PII: high. Never leaves disk — blocked on every egress channel by pii-guard."
+    },
+    "tax_ref": { "type": "string", "description": "PII: high." },
+    "organ_donor": { "type": "boolean" },
+    "insolvency": {
+      "type": "object",
+      "properties": {
+        "ever": { "type": "boolean" },
+        "sequestrated_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "rehabilitated_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+      },
+      "required": ["ever"],
+      "additionalProperties": false
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["home", "postal", "work", "other"] },
+          "lines": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "city": { "type": "string" },
+          "province": { "type": "string" },
+          "postal_code": { "type": "string" },
+          "country": { "type": "string" }
+        },
+        "required": ["kind", "lines"],
+        "additionalProperties": false
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "items": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "id",
+              "passport",
+              "drivers_licence",
+              "birth_certificate",
+              "marriage_certificate",
+              "divorce_order",
+              "other"
+            ]
+          },
+          "number": { "type": "string" },
+          "issued": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "expires": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+          "original_location": {
+            "type": "string",
+            "description": "Where the physical original is kept. Asked for every original — readiness J3."
+          }
+        },
+        "required": ["kind"],
+        "additionalProperties": false
+      }
+    },
+    "marital": {
+      "type": "object",
+      "properties": {
+        "regime": {
+          "type": "string",
+          "enum": [
+            "anc_without_accrual",
+            "anc_with_accrual",
+            "in_community",
+            "foreign",
+            "unmarried",
+            "unknown"
+          ]
+        },
+        "married_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "spouse_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": { "type": "string", "enum": ["divorce", "settlement", "maintenance"] },
+              "court": { "type": "string" },
+              "case_no": { "type": "string" },
+              "granted_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+              "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+              "survives_death": {
+                "type": "boolean",
+                "description": "Maintenance obligations that survive death are an estate claim — G9."
+              }
+            },
+            "required": ["kind"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["regime"],
+      "additionalProperties": false
+    },
+    "employment": {
+      "type": "object",
+      "properties": {
+        "employer": { "type": "string" },
+        "occupation": { "type": "string" },
+        "employee_no": { "type": "string" },
+        "started_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "contacts": {
+          "type": "array",
+          "items": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "notify_on_death": {
+      "type": "object",
+      "properties": {
+        "include": { "type": "boolean" },
+        "relationship": { "type": "string" },
+        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+      },
+      "required": ["include"],
+      "additionalProperties": false
+    },
+    "is_dependant": { "type": "boolean" }
+  },
+  "required": ["ref", "full_name", "relation"],
+  "unevaluatedProperties": false
+}

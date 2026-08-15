@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/readiness.schema.json",
+  "title": "readiness/1",
+  "description": "The Life File checklist as a live artefact, one row per (subject, requirement). Owner: readiness. Score is weighted by consequence_if_absent, not by count — a missing will outweighs a missing gym contract.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "subject_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "requirement": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The taxonomy leaf id plus a short label, e.g. 'G1:signed will'."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "identity",
+        "living",
+        "finance",
+        "insurance",
+        "investments",
+        "assets",
+        "tax",
+        "estate",
+        "trusts",
+        "final-wishes"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["present", "absent", "expired", "not_applicable", "not_tracked"],
+      "description": "'not_tracked' is used for a disabled domain and is excluded from the score but listed separately."
+    },
+    "expires_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+    "original_location": { "type": "string" },
+    "copies_needed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "holder": { "type": "string" },
+          "has_copy": { "type": "boolean" }
+        },
+        "required": ["holder", "has_copy"],
+        "additionalProperties": false
+      }
+    },
+    "weight": { "type": "number", "minimum": 0 },
+    "consequence_if_absent": {
+      "type": "string",
+      "enum": ["catastrophic", "severe", "moderate", "minor"],
+      "description": "Drives the weighting. Without this the score is decoration."
+    },
+    "effort_to_fix": {
+      "type": "string",
+      "enum": ["minutes", "hours", "days", "weeks"],
+      "description": "Score-delta divided by effort ranks the shortest path — J6."
+    }
+  },
+  "required": ["subject_ref", "requirement", "category", "status", "consequence_if_absent"],
+  "unevaluatedProperties": false
+}

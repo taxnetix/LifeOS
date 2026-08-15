@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/assets.schema.json",
+  "title": "assets/1",
+  "description": "Property, movables and rights. Owner: assets.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/assetRef" },
+    "owner_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "owner_entity": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/entityRef",
+      "description": "Set to a trust ref for trust-held assets — H9."
+    },
+    "class": {
+      "type": "string",
+      "enum": ["property", "vehicle", "valuable", "firearm", "timeshare", "right", "other"]
+    },
+    "kind": {
+      "type": "string",
+      "description": "class=right: usufruct | fideicommissum | income_entitlement. class=property: residential | commercial | agricultural | sectional_title."
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "address": {
+      "type": "object",
+      "properties": {
+        "lines": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "erf": { "type": "string" },
+        "postal_code": { "type": "string" }
+      },
+      "required": ["lines"],
+      "additionalProperties": false
+    },
+    "acquired_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "base_cost": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money",
+      "description": "Required for CGT and CGT-at-death — F9, G4b."
+    },
+    "offshore": { "type": "boolean" },
+    "pledged_to": {
+      "type": "string",
+      "description": "Liability ref this asset secures — E15."
+    },
+    "title_deed_location": {
+      "type": "string",
+      "description": "Where the physical deed is kept — E1, and a required readiness item."
+    },
+    "registration_no": { "type": "string" },
+    "levies": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "rates": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "owner_ref", "class", "description"],
+  "unevaluatedProperties": false
+}

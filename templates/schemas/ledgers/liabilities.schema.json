@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/liabilities.schema.json",
+  "title": "liabilities/1",
+  "description": "Debt and suretyship. Owner: assets. PII: high (account numbers). Suretyship is the item most often forgotten and most damaging at death — E14.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "debtor_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "home_loan",
+        "vehicle_finance",
+        "overdraft",
+        "credit_card",
+        "store_account",
+        "personal_loan",
+        "cellphone",
+        "suretyship",
+        "tax_debt",
+        "other"
+      ]
+    },
+    "creditor": { "type": "string", "minLength": 1 },
+    "account_no": { "type": "string", "description": "PII: high." },
+    "balance": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "balance_as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "rate": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "enum": ["fixed", "linked_to_prime", "variable"] },
+        "pct": { "type": "number" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    "instalment": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "ends_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "secured_by": {
+      "type": "array",
+      "items": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/assetRef" }
+    },
+    "surety_for": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef",
+      "description": "Required when kind=suretyship: whose debt is being guaranteed."
+    },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "debtor_ref", "kind", "creditor"],
+  "if": { "properties": { "kind": { "const": "suretyship" } }, "required": ["kind"] },
+  "then": { "required": ["surety_for"] },
+  "unevaluatedProperties": false
+}

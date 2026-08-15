@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/digital-estate.schema.json",
+  "title": "digital-estate/1",
+  "description": "Digital accounts, devices and the digital executor. Owner: living. LifeOS stores POINTERS, never secrets.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "$defs": {
+    "pointer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A LOCATION, never a secret: '1Password/Personal/FNB Online'. Rejects anything shaped like a credential being ASSIGNED a value ('password: hunter2', 'API_KEY=sk-...', 'seed phrase is ...') or a key blob, while still permitting the word 'password' in an ordinary location — '1Password' is the name of the very manager these pointers point at, so a blanket ban on the word would forbid the primary use case. Written with explicit character classes because JSON Schema patterns are ECMA-262, which has no inline (?i) flag. This is a coarse net; pii-guard and the agent charters are the real controls.",
+      "not": {
+        "pattern": "([Pp][Aa][Ss][Ss][Ww]([Oo][Rr])?[Dd]|[Pp][Ww][Dd]|[Ss][Ee][Cc][Rr][Ee][Tt]|[Aa][Pp][Ii][ _-]?[Kk][Ee][Yy]|[Pp][Rr][Ii][Vv][Aa][Tt][Ee][ _-]?[Kk][Ee][Yy]|[Ss][Ee][Ee][Dd][ _-][Pp][Hh][Rr][Aa][Ss][Ee]|[Pp][Ii][Nn]|[Tt][Oo][Kk][Ee][Nn]) *([:=]|[ ][Ii][Ss][ ]) *[^ ]|BEGIN [A-Z ]*PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,}"
+      }
+    }
+  },
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "subject_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "kind": { "type": "string", "enum": ["account", "device", "domain", "wallet"] },
+    "service": { "type": "string", "minLength": 1 },
+    "username": { "type": "string", "description": "PII: medium." },
+    "credential_pointer": { "$ref": "#/$defs/pointer" },
+    "recovery_pointer": { "$ref": "#/$defs/pointer" },
+    "two_factor": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string", "enum": ["totp", "sms", "hardware_key", "email", "none"] },
+        "pointer": { "$ref": "#/$defs/pointer" }
+      },
+      "required": ["method"],
+      "additionalProperties": false
+    },
+    "executor_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "on_death": { "type": "string", "enum": ["transfer", "close", "memorialise", "undecided"] }
+  },
+  "required": ["ref", "subject_ref", "kind", "service"],
+  "unevaluatedProperties": false
+}

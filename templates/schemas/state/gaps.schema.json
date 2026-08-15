@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/gaps.schema.json",
+  "title": "gaps/1",
+  "description": "$VAULT/state/gaps.jsonl — the register of everything the system knows it does not know. Append-only, many writers (safe precisely because it is append-only). Unknown is a first-class answer: never null meaning 'we didn't look', never 0 meaning 'unknown', never a plausible placeholder.",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "document.missing",
+        "document.expired",
+        "document.unreadable",
+        "field.unreadable",
+        "field.missing",
+        "record.low_confidence",
+        "conflict.unresolved",
+        "question.unanswered",
+        "rule.unverified",
+        "domain.disabled"
+      ]
+    },
+    "subject_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "domain": { "type": "string" },
+    "detail": { "type": "string", "minLength": 1 },
+    "blocking": {
+      "type": "boolean",
+      "description": "True raises gap.blocking in SENSE and holds dependent work items."
+    },
+    "consequence": {
+      "type": "string",
+      "enum": ["catastrophic", "severe", "moderate", "minor"]
+    },
+    "opened_run": { "type": "string" },
+    "opened_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "closed_run": { "type": "string" },
+    "closed_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "agent": { "type": "string" }
+  },
+  "required": ["id", "kind", "detail", "blocking", "opened_run", "opened_at", "agent"],
+  "additionalProperties": false
+}

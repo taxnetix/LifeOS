@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/holdings.schema.json",
+  "title": "holdings/1",
+  "description": "Retirement and discretionary investments. Owner: investments. PII: high (account numbers).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/holdingRef" },
+    "owner_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "ra",
+        "preservation",
+        "occupational",
+        "unit_trust",
+        "equity",
+        "money_market",
+        "crypto",
+        "tfsa",
+        "other"
+      ]
+    },
+    "platform": { "type": "string", "minLength": 1 },
+    "account_no": { "type": "string", "description": "PII: high." },
+    "mandate": { "type": "string" },
+    "offshore": { "type": "boolean" },
+    "currency": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/currency" },
+    "value": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "value_as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "fees": {
+      "type": "object",
+      "description": "Feeds the total-expense-ratio drag projection — D12c.",
+      "properties": {
+        "advice_pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+        "platform_pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+        "fund_ter_pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" }
+      },
+      "additionalProperties": false
+    },
+    "beneficiaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+          "name": { "type": "string" },
+          "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" }
+        },
+        "required": ["pct"],
+        "additionalProperties": false
+      }
+    },
+    "two_pot": {
+      "type": "object",
+      "description": "Two-pot retirement components — D4.",
+      "properties": {
+        "savings": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "retirement": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "vested": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" }
+      },
+      "additionalProperties": false
+    },
+    "reg28_applicable": { "type": "boolean" },
+    "allocation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset_class": {
+            "type": "string",
+            "enum": [
+              "local_equity",
+              "local_bonds",
+              "local_property",
+              "local_cash",
+              "offshore_equity",
+              "offshore_bonds",
+              "offshore_property",
+              "offshore_cash",
+              "commodities",
+              "crypto",
+              "other"
+            ]
+          },
+          "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" }
+        },
+        "required": ["asset_class", "pct"],
+        "additionalProperties": false
+      }
+    },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "owner_ref", "kind", "platform", "currency"],
+  "unevaluatedProperties": false
+}

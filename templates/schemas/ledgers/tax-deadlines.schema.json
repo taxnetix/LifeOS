@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/tax-deadlines.schema.json",
+  "title": "tax-deadlines/1",
+  "description": "The deadline calendar. Owner: tax. Drives /deadlines and the obligation.due signal in SENSE.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "taxpayer_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "irp6_1",
+        "irp6_2",
+        "itr12",
+        "itr14",
+        "it12tr",
+        "vat201",
+        "emp201",
+        "afs",
+        "bo_register",
+        "other"
+      ]
+    },
+    "period": {
+      "type": "string",
+      "description": "The period the obligation covers, e.g. '2026' or '2026-07'."
+    },
+    "due_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "lead_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Work starts before the date, not on it. SENSE fires obligation.due inside this window."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["upcoming", "in_progress", "submitted", "paid", "missed", "not_applicable"]
+    },
+    "rule_ref": { "type": "string" }
+  },
+  "required": ["ref", "taxpayer_ref", "kind", "period", "due_on", "lead_days", "status"],
+  "unevaluatedProperties": false
+}

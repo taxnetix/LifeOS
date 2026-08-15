@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/distributions.schema.json",
+  "title": "distributions/1",
+  "description": "Trust distributions and their tax attribution. Owner: trusts. Feeds the conduit principle and attribution rules — F18, F20, F21.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "trust_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/trustRef" },
+    "beneficiary_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "tax_year": { "type": "string", "pattern": "^\\d{4}$" },
+    "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "nature": {
+      "type": "string",
+      "enum": ["income_interest", "income_rental", "income_foreign", "dividend", "capital_gain", "capital"]
+    },
+    "conduit": {
+      "type": "boolean",
+      "description": "Whether the conduit principle applies, flowing the nature through to the beneficiary."
+    },
+    "attributed_to_ref": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef",
+      "description": "Where attribution rules override the recipient — e.g. back to the donor."
+    },
+    "resolution_ref": {
+      "type": "string",
+      "description": "The trustee resolution authorising it. A distribution without one is a compliance finding."
+    },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["trust_ref", "beneficiary_ref", "tax_year", "amount", "nature"],
+  "unevaluatedProperties": false
+}

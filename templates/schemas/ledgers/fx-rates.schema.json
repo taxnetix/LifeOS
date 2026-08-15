@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/fx-rates.schema.json",
+  "title": "fx-rates/1",
+  "description": "Dated exchange rates. Owner: assets. Every cross-currency figure in every report names the rate and its date — there is no implicit conversion anywhere in the system (ADR-0005).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "pair": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}[A-Z]{3}$",
+      "description": "Base then quote, e.g. USDZAR means 1 USD in ZAR."
+    },
+    "rate": { "type": "number", "exclusiveMinimum": 0 },
+    "rate_date": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "rate_source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the rate came from — public reference data, the one class of outbound lookup the redaction hook permits. NOT named 'source': that name belongs to the envelope's provenance block, and redefining it here would make the schema unsatisfiable."
+    },
+    "fetched_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" }
+  },
+  "required": ["pair", "rate", "rate_date", "rate_source"],
+  "unevaluatedProperties": false
+}

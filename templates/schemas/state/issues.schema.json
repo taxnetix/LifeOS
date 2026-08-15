@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/issues.schema.json",
+  "title": "issues/1",
+  "description": "$VAULT/state/system/issues.jsonl — the local mirror of GitHub issues. Writer: orchestrator via tools/py/gh_sync.py during SENSE. SYSTEM WORK ONLY; contains no personal data by construction (ADR-0017). Files remain the source of truth: the mirror degrades to cache when the network is down and never fails a heartbeat.",
+  "type": "object",
+  "properties": {
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Absent while local_only is true — a draft has no number yet."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "state": { "type": "string", "enum": ["open", "closed"] },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(kind:(bug|feature|adapter|rule-refresh|schema|refactor|docs|test|security)|area:[a-z/]+|domain:[a-z-]+|phase:[0-7]|needs:human|blocked|self-filed)$"
+      }
+    },
+    "milestone": {
+      "type": "string",
+      "description": "One per build phase. Milestone closure gives /status an external progress measure rather than a self-assessment."
+    },
+    "assignees": { "type": "array", "items": { "type": "string" } },
+    "url": { "type": "string", "format": "uri" },
+    "created_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "updated_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "synced_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "local_only": {
+      "type": "boolean",
+      "description": "Drafted in proposed/issues/ but not yet filed, so the backlog is complete and usable offline."
+    },
+    "draft_path": { "type": "string" }
+  },
+  "required": ["title", "state", "labels", "local_only"],
+  "if": { "properties": { "local_only": { "const": false } }, "required": ["local_only"] },
+  "then": { "required": ["number", "url", "synced_at"] },
+  "additionalProperties": false
+}

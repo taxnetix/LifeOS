@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/medical-aid.schema.json",
+  "title": "medical-aid/1",
+  "description": "Medical scheme and gap cover. Owner: living. PII: high (special personal information under POPIA).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "enum": ["scheme", "gap"] },
+    "provider": { "type": "string", "minLength": 1 },
+    "plan": { "type": "string" },
+    "option": { "type": "string" },
+    "member_no": { "type": "string", "description": "PII: high." },
+    "main_member_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+          "role": { "type": "string", "enum": ["main", "adult_dependant", "child_dependant"] },
+          "joined_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+        },
+        "required": ["person_ref", "role"],
+        "additionalProperties": false
+      }
+    },
+    "premium": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "savings": {
+      "type": "object",
+      "properties": {
+        "annual": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "used": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" }
+      },
+      "additionalProperties": false
+    },
+    "threshold": {
+      "type": "object",
+      "properties": {
+        "annual": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "reached_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+      },
+      "additionalProperties": false
+    },
+    "sublimits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "limit": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+          "period": { "type": "string", "enum": ["annual", "per_event", "lifetime"] }
+        },
+        "required": ["kind", "limit"],
+        "additionalProperties": false
+      }
+    },
+    "providers": {
+      "type": "array",
+      "description": "Family doctor, dentist, optometrist and their contacts.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "name": { "type": "string" },
+          "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+        },
+        "required": ["kind", "name"],
+        "additionalProperties": false
+      }
+    },
+    "option_change_window": {
+      "type": "object",
+      "properties": {
+        "opens": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "closes": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+      },
+      "additionalProperties": false
+    },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "kind", "provider"],
+  "unevaluatedProperties": false
+}

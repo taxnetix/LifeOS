@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/config/budgets.schema.json",
+  "title": "budgets/1",
+  "description": "$VAULT/ledgers/budgets.yaml — human-authored, machine-read. Owner: finance. Round-tripped with ruamel.yaml so your comments survive.",
+  "type": "object",
+  "properties": {
+    "schema": { "type": "string", "const": "budgets/1" },
+    "entities": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(per|ent)_[a-z0-9_]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "period": { "type": "string", "enum": ["monthly", "quarterly", "annual"] },
+          "currency": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/currency" },
+          "categories": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "target_cents": { "type": "integer" },
+                "tolerance_pct": {
+                  "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent",
+                  "description": "Breaching this raises a variance.breach signal in SENSE."
+                },
+                "notes": { "type": "string" }
+              },
+              "required": ["target_cents"],
+              "additionalProperties": false
+            }
+          },
+          "savings_rate_target_pct": {
+            "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent"
+          }
+        },
+        "required": ["period", "currency", "categories"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["schema", "entities"],
+  "additionalProperties": false
+}

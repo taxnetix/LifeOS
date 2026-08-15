@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/recurring-payments.schema.json",
+  "title": "recurring-payments/1",
+  "description": "Every debit order and recurring cash payment. Owner: finance.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "payer_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "account_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/accountRef" },
+    "counterparty": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["debit_order", "eft", "card_recurring", "cash", "other"]
+    },
+    "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "frequency": {
+      "type": "string",
+      "enum": ["weekly", "fortnightly", "monthly", "quarterly", "biannual", "annual"]
+    },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+        "month": { "type": "integer", "minimum": 1, "maximum": 12 }
+      },
+      "additionalProperties": false
+    },
+    "started_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "contract_ends_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "cancellation_route": {
+      "type": "string",
+      "minLength": 1,
+      "description": "REQUIRED. A recurring cost you cannot work out how to stop is a finding; this field exists to force the question."
+    },
+    "last_seen_txn": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+    "status": { "type": "string", "enum": ["active", "lapsed", "cancelled"] }
+  },
+  "required": [
+    "ref",
+    "payer_ref",
+    "counterparty",
+    "kind",
+    "amount",
+    "frequency",
+    "cancellation_route",
+    "status"
+  ],
+  "unevaluatedProperties": false
+}

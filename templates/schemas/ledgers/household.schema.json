@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/household.schema.json",
+  "title": "household/1",
+  "description": "Household security, access, firearm licences and service providers. Owner: living. Access records store WHO holds it and WHERE it is documented — never the code itself.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "enum": ["access", "firearm", "provider"] },
+    "description": { "type": "string", "minLength": 1 },
+    "custodian_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "location_hint": {
+      "type": "string",
+      "description": "Where the code or key is documented — never the code. Rejects digit runs that look like a code.",
+      "not": { "pattern": "\\d{4,}" }
+    },
+    "licence": {
+      "type": "object",
+      "properties": {
+        "no": { "type": "string" },
+        "expires": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+      },
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "service": {
+          "type": "string",
+          "enum": ["alarm", "armed_response", "plumbing", "electrical", "repairs", "garden", "other"]
+        },
+        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+      },
+      "required": ["name", "service"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ref", "kind", "description"],
+  "unevaluatedProperties": false
+}

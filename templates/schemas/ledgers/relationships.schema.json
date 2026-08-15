@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/relationships.schema.json",
+  "title": "relationships/1",
+  "description": "The edge table for the whole graph. Owner: identity. Every cross-domain question resolves through it.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "from_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "to_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "shareholding",
+        "directorship",
+        "trustee",
+        "beneficiary",
+        "dependant",
+        "guardian",
+        "spouse",
+        "employment",
+        "suretyship",
+        "pledge",
+        "member",
+        "other"
+      ]
+    },
+    "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+    "since": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "until": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "note": { "type": "string" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["from_ref", "to_ref", "kind"],
+  "unevaluatedProperties": false
+}

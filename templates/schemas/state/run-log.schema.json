@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/run-log.schema.json",
+  "title": "run-log/1",
+  "description": "$VAULT/state/run-log.jsonl — one line per heartbeat. Writer: orchestrator. Append-only. This is what you read to review the first week of unattended scheduled runs (ADR-0013).",
+  "type": "object",
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "trigger": {
+      "type": "string",
+      "enum": ["manual", "scheduled", "command", "life_event"]
+    },
+    "started_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "ended_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "quiet": {
+      "type": "boolean",
+      "description": "True means SENSE found nothing: one journal line, zero subagents. The cheap idle path (ADR-0003)."
+    },
+    "waves": { "type": "integer", "minimum": 0 },
+    "items_selected": { "type": "integer", "minimum": 0 },
+    "items_done": { "type": "integer", "minimum": 0 },
+    "items_failed": { "type": "integer", "minimum": 0 },
+    "items_parked": { "type": "integer", "minimum": 0 },
+    "ledgers_written": { "type": "array", "items": { "type": "string" } },
+    "records_written": { "type": "integer", "minimum": 0 },
+    "gaps_opened": { "type": "integer", "minimum": 0 },
+    "gaps_closed": { "type": "integer", "minimum": 0 },
+    "proposals_created": { "type": "integer", "minimum": 0 },
+    "github_reachable": { "type": "boolean" },
+    "outcome": {
+      "type": "string",
+      "enum": ["committed", "partial", "failed"],
+      "description": "Anything other than 'committed' leaves cursors unadvanced, so the next SENSE emits run.failed."
+    },
+    "error": { "type": "string" }
+  },
+  "required": ["run_id", "trigger", "started_at", "quiet", "outcome"],
+  "additionalProperties": false
+}

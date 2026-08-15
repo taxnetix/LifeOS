@@ -1,0 +1,37 @@
+# LifeOS — Python runtime dependencies
+#
+# Python owns the data plane: extraction, parsing, normalisation, enrichment,
+# analysis, tax mathematics, deterministic SENSE, and the GitHub mirror sync.
+# Nothing here orchestrates — every module is a leaf tool invoked by an agent,
+# which exits and returns JSON.  See ADR-0011 and ADR-0004.
+#
+# Rationale for every line: docs/dependencies.md
+# Install (Phase 1):
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+#
+# Floors are minimum-compatible majors.  Phase 1 freezes the resolved set into
+# requirements.lock.txt, which is the file CI and /selftest install from.
+
+# --- Document extraction -----------------------------------------------------
+pdfplumber>=0.11,<0.12        # PDF text + table extraction with per-word bbox
+pypdf>=5.0,<6                 # page ops, metadata, decryption of protected PDFs
+pytesseract>=0.3.13,<0.4      # OCR wrapper; requires the tesseract binary
+pillow>=11.0,<12              # image handling for the OCR path
+openpyxl>=3.1,<4              # .xlsx / .xlsm
+python-docx>=1.1,<2           # .docx  (imports as `docx`)
+
+# --- Data plane --------------------------------------------------------------
+pandas>=2.2,<3                # tabular normalise + analyse over JSONL ledgers
+python-dateutil>=2.9,<3       # fiscal-calendar arithmetic, fuzzy date parsing
+rapidfuzz>=3.10,<4            # merchant/counterparty dedupe and matching
+
+# --- Life File PDF -----------------------------------------------------------
+# HTML stays the source of truth and is always produced; the PDF is derived.
+# Needs pango + cairo (present via homebrew).  If import fails, /life-file still
+# emits the self-contained HTML and tells you to print it from a browser.
+weasyprint>=62,<66            # HTML/CSS -> PDF for the Life File
+
+# --- Schema and config -------------------------------------------------------
+jsonschema>=4.23,<5           # JSON Schema 2020-12 validation at write time
+pydantic>=2.9,<3              # typed record models in tools/py
+ruamel.yaml>=0.18,<0.19       # round-trip YAML: preserves your comments in profile.yaml

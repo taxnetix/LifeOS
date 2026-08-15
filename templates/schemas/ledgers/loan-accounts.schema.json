@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/loan-accounts.schema.json",
+  "title": "loan-accounts/1",
+  "description": "Trust loan accounts and s7C exposure. Owner: trusts — H10, H11.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "trust_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/trustRef" },
+    "counterparty_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "direction": {
+      "type": "string",
+      "enum": ["owed_by_trust", "owed_to_trust"]
+    },
+    "balance": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "balance_as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "interest_rate_pct": { "type": "number", "minimum": 0 },
+    "s7c_applicable": { "type": "boolean" },
+    "s7c_deemed_donation": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money",
+      "description": "Computed annually against za/s7c.yaml. Carries rule_ref so the 'as at' date travels with the figure."
+    },
+    "rule_ref": { "type": "string" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["trust_ref", "counterparty_ref", "direction", "balance", "balance_as_at"],
+  "unevaluatedProperties": false
+}

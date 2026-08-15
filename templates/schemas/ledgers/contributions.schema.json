@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/contributions.schema.json",
+  "title": "contributions/1",
+  "description": "Contributions to retirement and TFSA holdings. Owner: investments. Feeds the deduction-cap and TFSA-limit checks (D12e, D12f).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "holding_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/holdingRef" },
+    "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "tax_year": {
+      "type": "string",
+      "pattern": "^\\d{4}$",
+      "description": "SA tax year of assessment, identified by the year in which it ends (1 Mar – 28/29 Feb)."
+    },
+    "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "kind": { "type": "string", "enum": ["member", "employer", "lump_sum", "transfer_in"] },
+    "deductible": { "type": "boolean" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["holding_ref", "person_ref", "tax_year", "amount", "kind"],
+  "unevaluatedProperties": false
+}

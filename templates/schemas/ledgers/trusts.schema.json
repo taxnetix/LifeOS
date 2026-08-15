@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/trusts.schema.json",
+  "title": "trusts/1",
+  "description": "Trust register. Owner: trusts. PII: high. Also shipped as packs/trusts.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/trustRef" },
+    "name": { "type": "string", "minLength": 1 },
+    "mt_number": {
+      "type": "string",
+      "description": "Master's reference. PII: high."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["inter_vivos_discretionary", "inter_vivos_vested", "testamentary", "bewind", "special"]
+    },
+    "founder_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "entity_ref": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/entityRef",
+      "description": "The trust's identity in entities.jsonl, so assets and tax attach to it normally."
+    },
+    "deed": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["deed", "amendment", "resolution_of_variation"] },
+          "signed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+        },
+        "required": ["kind"],
+        "additionalProperties": false
+      }
+    },
+    "loa": {
+      "type": "object",
+      "description": "Letters of authority. Trustee names here must match trustees.jsonl — H3.",
+      "properties": {
+        "issued_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+        "trustees": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "beneficiaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+          "class_description": {
+            "type": "string",
+            "description": "For class beneficiaries where no individual is named."
+          },
+          "capital": { "type": "boolean" },
+          "income": { "type": "boolean" },
+          "vested": { "type": "boolean", "description": "false = contingent." }
+        },
+        "required": ["capital", "income", "vested"],
+        "additionalProperties": false
+      }
+    },
+    "bo_register": {
+      "type": "object",
+      "description": "Beneficial-ownership register filed with the Master — H15.",
+      "properties": {
+        "filed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+      },
+      "additionalProperties": false
+    },
+    "year_end": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" },
+    "fica_accountable": {
+      "type": "boolean",
+      "description": "Whether the trust is an accountable institution — H16."
+    }
+  },
+  "required": ["ref", "name", "type"],
+  "unevaluatedProperties": false
+}

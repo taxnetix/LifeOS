@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/cursors.schema.json",
+  "title": "cursors/1",
+  "description": "$VAULT/state/cursors.json. Writer: orchestrator. Per-stream, not global. A run that dies before COMMIT leaves these unadvanced, so the next SENSE emits run.failed and the work is retried rather than lost.",
+  "type": "object",
+  "properties": {
+    "schema": { "type": "string", "const": "cursors/1" },
+    "inbox": {
+      "type": "object",
+      "properties": {
+        "last_scanned": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "last_hash_seen": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+      },
+      "additionalProperties": false
+    },
+    "cadence": {
+      "type": "object",
+      "properties": {
+        "hourly": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "daily": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "weekly": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "monthly": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "quarterly": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "annual": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" }
+      },
+      "additionalProperties": false
+    },
+    "ledgers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "last_written": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+          "records": { "type": "integer", "minimum": 0 },
+          "freshness_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Older than this raises ledger.stale in SENSE."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rules": {
+      "type": "object",
+      "description": "Rulebook currency. Past refresh_interval raises rule.expired and must be re-verified before reliance.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "verified": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "refresh_interval": {
+            "type": "string",
+            "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+D)?$",
+            "description": "ISO 8601 duration, e.g. P1Y."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "github": {
+      "type": "object",
+      "properties": {
+        "last_synced": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "reachable": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "inbox", "cadence"],
+  "additionalProperties": false
+}

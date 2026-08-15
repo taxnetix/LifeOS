@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/queue.schema.json",
+  "title": "queue/1",
+  "description": "$VAULT/state/queue.json. SOLE WRITER: orchestrator (ADR-0007). Agents return proposed items; the orchestrator merges. Work-item identity is hash(signal), so the same unanswered proposal on twenty heartbeats is one ageing item, not twenty items.",
+  "type": "object",
+  "properties": {
+    "schema": { "type": "string", "const": "queue/1" },
+    "updated_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^wi_\\d{8}_\\d{4}$" },
+          "signal": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "inbox.new",
+                  "inbox.unreadable",
+                  "cadence.due",
+                  "ledger.stale",
+                  "obligation.due",
+                  "rule.expired",
+                  "proposal.pending",
+                  "question.open",
+                  "gap.blocking",
+                  "run.failed",
+                  "variance.breach",
+                  "document.type.unseen",
+                  "life.event",
+                  "github.issue.open",
+                  "github.issue.needs_human",
+                  "github.pr.review_requested",
+                  "github.ci.failed"
+                ]
+              }
+            },
+            "required": ["kind"]
+          },
+          "signal_hash": {
+            "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash",
+            "description": "Identity. Repeated signals collapse into one item with an age."
+          },
+          "domain": { "type": "string" },
+          "owner": { "type": "string", "description": "The agent that will execute it." },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Derived from deadline proximity, financial magnitude, whether it blocks something, and whether it answers an open question. github.* signals are capped by profile.github.priority_ceiling."
+          },
+          "cost_estimate": { "type": "string", "enum": ["trivial", "low", "medium", "high"] },
+          "depends_on": { "type": "array", "items": { "type": "string" } },
+          "blocks": { "type": "array", "items": { "type": "string" } },
+          "state": {
+            "type": "string",
+            "enum": ["queued", "in_progress", "done", "failed", "parked", "cancelled"]
+          },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "max_attempts": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "On exhaustion the item parks with a gap record explaining why. Only a human or a changed input revives it — this is what stops a permanently-failing item consuming every heartbeat forever."
+          },
+          "created_run": { "type": "string" },
+          "last_run": { "type": "string" },
+          "note": { "type": "string" }
+        },
+        "required": ["id", "signal", "signal_hash", "domain", "owner", "priority", "state", "attempts"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["schema", "updated_at", "items"],
+  "additionalProperties": false
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/subscriptions.schema.json",
+  "title": "subscriptions/1",
+  "description": "Subscriptions and contracts: streaming, phone and data, gym, software, memberships. Owner: living.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "subject_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "service": { "type": "string", "minLength": 1 },
+    "category": {
+      "type": "string",
+      "enum": ["streaming", "telecoms", "fitness", "software", "membership", "media", "other"]
+    },
+    "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "frequency": {
+      "type": "string",
+      "enum": ["monthly", "quarterly", "annual", "other"]
+    },
+    "started_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "renews_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "lock_in_until": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "cancellation_route": { "type": "string" },
+    "linked_recurring_ref": {
+      "type": "string",
+      "description": "Links to the recurring-payments record that pays it, so duplicates surface."
+    }
+  },
+  "required": ["ref", "subject_ref", "service", "amount"],
+  "unevaluatedProperties": false
+}

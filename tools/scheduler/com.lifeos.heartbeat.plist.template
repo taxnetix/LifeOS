@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LifeOS hourly heartbeat — TEMPLATE. Not installed by the build.
+
+  Before you load this, be honest with yourself about three things:
+    1. /heartbeat has run clean manually for a while.
+    2. profile.github.autofile is set the way you want, because an unattended
+       run can file issues.
+    3. You will actually review the first week via state/run-log.jsonl.
+
+  Install:
+    sed -e "s|__REPO__|$PWD|g" -e "s|__VAULT__|$PWD/vault|g" \
+      tools/scheduler/com.lifeos.heartbeat.plist.template \
+      > ~/Library/LaunchAgents/com.lifeos.heartbeat.plist
+    launchctl load ~/Library/LaunchAgents/com.lifeos.heartbeat.plist
+
+  Remove:
+    launchctl unload ~/Library/LaunchAgents/com.lifeos.heartbeat.plist
+    rm ~/Library/LaunchAgents/com.lifeos.heartbeat.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>              <string>com.lifeos.heartbeat</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__REPO__/tools/scheduler/heartbeat.sh</string>
+  </array>
+  <key>WorkingDirectory</key>   <string>__REPO__</string>
+  <key>StartInterval</key>      <integer>3600</integer>
+  <key>RunAtLoad</key>          <false/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LIFEOS_VAULT</key>               <string>__VAULT__</string>
+    <key>DYLD_FALLBACK_LIBRARY_PATH</key> <string>/opt/homebrew/lib</string>
+    <key>PATH</key>                       <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key>    <string>__VAULT__/state/scheduler.out.log</string>
+  <key>StandardErrorPath</key>  <string>__VAULT__/state/scheduler.err.log</string>
+</dict>
+</plist>

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/accounts.schema.json",
+  "title": "accounts/1",
+  "description": "Bank accounts per person and per entity. Owner: finance. PII: high (account numbers).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/accountRef" },
+    "owner_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "bank": {
+      "type": "string",
+      "description": "Free text, but parser selection fingerprints the document rather than trusting this."
+    },
+    "branch_code": { "type": "string" },
+    "account_no": { "type": "string", "description": "PII: high. Masked to last 4 in all reports." },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "cheque",
+        "savings",
+        "credit_card",
+        "loan",
+        "money_market",
+        "business",
+        "trust",
+        "other"
+      ]
+    },
+    "currency": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/currency" },
+    "opened_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "closed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "is_business": {
+      "type": "boolean",
+      "description": "Keeps personal and business strictly separate while still rolling up to one consolidated view."
+    },
+    "statement_cadence": {
+      "type": "string",
+      "enum": ["monthly", "quarterly", "annual", "on_demand"]
+    }
+  },
+  "required": ["ref", "owner_ref", "bank", "kind", "currency", "is_business"],
+  "unevaluatedProperties": false
+}

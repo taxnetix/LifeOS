@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/agent-state.schema.json",
+  "title": "agent-state/1",
+  "description": "$VAULT/state/agents/<name>.json — charter part 4. Written by that agent alone. meta-architect reads these to detect overload and propose promoting a specialist to its own agent (ADR-0010).",
+  "type": "object",
+  "properties": {
+    "schema": { "type": "string", "const": "agent-state/1" },
+    "agent": { "type": "string", "minLength": 1 },
+    "last_run": {
+      "type": "object",
+      "properties": {
+        "run_id": { "type": "string" },
+        "started_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "ended_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+        "duration_ms": { "type": "integer", "minimum": 0 },
+        "outcome": { "type": "string", "enum": ["done", "partial", "failed", "skipped"] }
+      },
+      "required": ["run_id", "outcome"],
+      "additionalProperties": false
+    },
+    "cursor": {
+      "type": "object",
+      "description": "Whatever this agent needs to resume. Shape is the agent's own business.",
+      "additionalProperties": true
+    },
+    "health": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "blocked", "never_run"]
+    },
+    "open_loops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "detail": { "type": "string" },
+          "since": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+        },
+        "required": ["detail", "since"],
+        "additionalProperties": false
+      }
+    },
+    "known_gaps": {
+      "type": "array",
+      "items": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "The agent's own assessment of how complete its picture is."
+    },
+    "pending_questions": {
+      "type": "array",
+      "description": "Questions for the human. These surface in REFLECT under 'what I need from you' and raise question.open in SENSE.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": { "type": "string", "minLength": 1 },
+          "asked_run": { "type": "string" },
+          "asked_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+          "blocks": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["question", "asked_run", "asked_at"],
+        "additionalProperties": false
+      }
+    },
+    "self_review": {
+      "type": "object",
+      "description": "Charter part 7. Every agent ends every run by answering these three; the answers become work items and memory candidates.",
+      "properties": {
+        "learned": { "type": "string" },
+        "missing": { "type": "string" },
+        "next_time": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Overload signals. Thresholds live in profile.yaml.",
+      "properties": {
+        "runs_total": { "type": "integer", "minimum": 0 },
+        "failures_recent": { "type": "integer", "minimum": 0 },
+        "avg_duration_ms": { "type": "integer", "minimum": 0 },
+        "ledgers_owned": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "agent", "health"],
+  "additionalProperties": false
+}

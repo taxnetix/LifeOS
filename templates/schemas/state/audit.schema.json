@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/state/audit.schema.json",
+  "title": "audit/1",
+  "description": "$VAULT/state/audit.jsonl — append-only. Written by the vault-audit PostToolUse hook and by pii-guard on every BLOCKED egress attempt. A redaction log that contained the redacted values would be self-defeating, so only the pattern CLASS is recorded, never the matched value.",
+  "type": "object",
+  "properties": {
+    "at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "event": {
+      "type": "string",
+      "enum": ["vault.write", "vault.delete", "egress.blocked", "egress.allowed", "document.filed"]
+    },
+    "tool": { "type": "string" },
+    "path": { "type": "string", "description": "Vault-relative. Never absolute." },
+    "bytes": { "type": "integer", "minimum": 0 },
+    "channel": {
+      "type": "string",
+      "enum": ["WebFetch", "WebSearch", "gh", "curl", "wget", "other"],
+      "description": "Set on egress events. gh counts as egress — an issue body is publication."
+    },
+    "pattern_class": {
+      "type": "string",
+      "enum": [
+        "sa_id_number",
+        "account_number",
+        "policy_number",
+        "member_number",
+        "registration_number",
+        "email",
+        "physical_address",
+        "profile_name",
+        "credential_like"
+      ],
+      "description": "The CLASS that matched. The value is never recorded."
+    },
+    "run_id": { "type": "string" },
+    "agent": { "type": "string" }
+  },
+  "required": ["at", "event"],
+  "additionalProperties": false
+}

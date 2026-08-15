@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/beneficiaries.schema.json",
+  "title": "beneficiaries/1",
+  "description": "Nominations across every policy, fund and holding, checked against the will. Owner: estate. The conflict check is a cross-domain read no single domain could perform — G5.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "instrument_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ref into policies, holdings or employee-benefits."
+    },
+    "instrument_ledger": {
+      "type": "string",
+      "enum": ["policies", "holdings", "employee-benefits"]
+    },
+    "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "name": { "type": "string" },
+    "pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+    "kind": { "type": "string", "enum": ["nominated", "estate", "trust"] },
+    "nominated_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "conflicts_with_will": {
+      "type": "boolean",
+      "description": "COMPUTED, never entered. True becomes a high-priority work item."
+    },
+    "conflict_detail": { "type": "string" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["instrument_ref", "instrument_ledger", "pct", "kind"],
+  "unevaluatedProperties": false
+}

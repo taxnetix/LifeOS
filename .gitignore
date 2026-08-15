@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  THE VAULT — real personal data. Never committed. Ever.
+#
+#  This entry is advisory: `git add -f`, an edited .gitignore, or `git stash -u`
+#  would each defeat it, and git history cannot be un-rung.  The pre-commit hook
+#  at .claude/hooks/pre-commit is the HARD control.  Install it with:
+#      bash tools/scripts/install-hooks.sh
+#  Never bypass it with --no-verify.       See docs/adr/0008-*.md
+# ─────────────────────────────────────────────────────────────────────────────
+vault/
+vault-*/
+*.vault/
+
+# Anything a user marks local
+*.local
+*.local.*
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+requirements.lock.txt
+
+# ─── Node ────────────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── macOS ───────────────────────────────────────────────────────────────────
+.DS_Store
+
+# ─── Editors ─────────────────────────────────────────────────────────────────
+.idea/
+*.swp
+
+# ─── Claude Code local overrides ─────────────────────────────────────────────
+.claude/settings.local.json

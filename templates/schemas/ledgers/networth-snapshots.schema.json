@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/networth-snapshots.schema.json",
+  "title": "networth-snapshots/1",
+  "description": "Rolling net worth and balance-sheet history. Owner: finance. components[] makes every snapshot fully attributable; /audit walks it.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "entity_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "assets": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "liabilities": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "net": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "components": {
+      "type": "array",
+      "description": "Every contributing record. A snapshot with no components cannot be audited and must not be written.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "ledger": { "type": "string" },
+          "record_id": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+          "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" }
+        },
+        "required": ["ledger", "record_id", "amount"],
+        "additionalProperties": false
+      }
+    },
+    "fx_basis": {
+      "type": "array",
+      "description": "Named on the face of every report that mixes currencies. No implicit conversion anywhere.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pair": { "type": "string", "pattern": "^[A-Z]{6}$" },
+          "rate": { "type": "number", "exclusiveMinimum": 0 },
+          "rate_date": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+        },
+        "required": ["pair", "rate", "rate_date"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["as_at", "entity_ref", "assets", "liabilities", "net", "components"],
+  "unevaluatedProperties": false
+}

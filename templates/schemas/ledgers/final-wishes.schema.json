@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/final-wishes.schema.json",
+  "title": "final-wishes/1",
+  "description": "Funeral and final wishes. Owner: final-wishes. This is the part a grieving family reads first, so it must be answerable without a lawyer.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+    "disposition": { "type": "string", "enum": ["burial", "cremation", "undecided"] },
+    "plot": {
+      "type": "object",
+      "properties": {
+        "purchased": { "type": "boolean" },
+        "cemetery": { "type": "string" },
+        "section": { "type": "string" },
+        "number": { "type": "string" },
+        "deed_doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+      },
+      "required": ["purchased"],
+      "additionalProperties": false
+    },
+    "ashes": { "type": "string", "description": "Instructions for ashes." },
+    "service": {
+      "type": "object",
+      "properties": {
+        "venue": { "type": "string" },
+        "officiant": { "type": "string" },
+        "music": { "type": "array", "items": { "type": "string" } },
+        "readings": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "thirty_day_liquidity": {
+      "type": "object",
+      "description": "A REAL number: cash reachable in the first 30 days. Cross-read from finance and insurance — I6.",
+      "properties": {
+        "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "ledger": { "type": "string" },
+              "record_id": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+              "amount": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+              "days_to_access": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["description", "amount", "days_to_access"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["amount", "sources"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["person_ref", "disposition"],
+  "unevaluatedProperties": false
+}

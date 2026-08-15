@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/valuations.schema.json",
+  "title": "valuations/1",
+  "description": "Dated valuations per asset. Owner: assets. Append-only, so valuation history is intact.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "asset_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/assetRef" },
+    "as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "value": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "basis": {
+      "type": "string",
+      "enum": ["municipal", "market", "insured", "professional", "estimate"],
+      "description": "'estimate' is rendered differently in reports — an estimate is not a valuation."
+    },
+    "valuer": { "type": "string" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["asset_ref", "as_at", "value", "basis"],
+  "unevaluatedProperties": false
+}

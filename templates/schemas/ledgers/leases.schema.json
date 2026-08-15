@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/leases.schema.json",
+  "title": "leases/1",
+  "description": "Rental and lease contracts in either direction. Owner: living. Feeds tax rental-income schedules (F8).",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "type": "string", "minLength": 1 },
+    "direction": {
+      "type": "string",
+      "enum": ["in", "out"],
+      "description": "'in' = we rent from someone; 'out' = we let to someone."
+    },
+    "property_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/assetRef" },
+    "property_description": { "type": "string" },
+    "counterparty": { "type": "string", "minLength": 1 },
+    "rent": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "escalation_pct": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/percent" },
+    "starts_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "ends_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+    "deposit": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/money" },
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+  },
+  "required": ["ref", "direction", "counterparty", "rent"],
+  "unevaluatedProperties": false
+}

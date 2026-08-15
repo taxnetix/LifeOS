@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/entities.schema.json",
+  "title": "entities/1",
+  "description": "Business entities. Owner: identity. PII: high.",
+  "allOf": [{ "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/base" }],
+  "properties": {
+    "ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/entityRef" },
+    "legal_name": { "type": "string", "minLength": 1 },
+    "trading_name": { "type": "string" },
+    "form": {
+      "type": "string",
+      "enum": ["pty_ltd", "cc", "trust", "partnership", "sole_prop", "npc", "other"]
+    },
+    "registration_no": { "type": "string" },
+    "tax_ref": { "type": "string" },
+    "vat_no": { "type": "string" },
+    "year_end": {
+      "type": "string",
+      "pattern": "^\\d{2}-\\d{2}$",
+      "description": "MM-DD. Drives ITR14 and AFS deadlines."
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["registered", "postal", "trading"] },
+          "lines": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "postal_code": { "type": "string" }
+        },
+        "required": ["kind", "lines"],
+        "additionalProperties": false
+      }
+    },
+    "key_people": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "person_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/personRef" },
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+        },
+        "required": ["role"],
+        "additionalProperties": false
+      }
+    },
+    "advisors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["auditor", "accountant", "attorney", "company_secretary", "other"]
+          },
+          "name": { "type": "string" },
+          "contact": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/contact" }
+        },
+        "required": ["kind", "name"],
+        "additionalProperties": false
+      }
+    },
+    "agreements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["moi", "shareholders", "partnership", "association", "buy_sell", "other"]
+          },
+          "signed_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+        },
+        "required": ["kind"],
+        "additionalProperties": false
+      }
+    },
+    "financials": {
+      "type": "array",
+      "description": "Annual financial statements. as_at drives the brief's 'currency < 6 months' rule; stale produces a gap.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "as_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+          "audited": { "type": "boolean" },
+          "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" }
+        },
+        "required": ["as_at"],
+        "additionalProperties": false
+      }
+    },
+    "insolvency": {
+      "type": "object",
+      "properties": {
+        "ever": { "type": "boolean" },
+        "liquidated_on": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+      },
+      "required": ["ever"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ref", "legal_name", "form"],
+  "unevaluatedProperties": false
+}

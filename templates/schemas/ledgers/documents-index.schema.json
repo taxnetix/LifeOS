@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifeos.local/schemas/ledgers/documents-index.schema.json",
+  "title": "documents-index/1",
+  "description": "The index of filed originals at documents/index.jsonl. Owner: librarian. Originals are immutable — never deleted, never modified, never overwritten.",
+  "type": "object",
+  "properties": {
+    "doc_hash": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/hash" },
+    "original_path": {
+      "type": "string",
+      "description": "Where it arrived, relative to the vault — normally inbox/<name>."
+    },
+    "filed_path": {
+      "type": "string",
+      "pattern": "^documents/\\d{4}/[a-z-]+/[0-9a-f]{12}-[a-z0-9-]+\\.[a-z0-9]+$",
+      "description": "documents/<year>/<domain>/<hash-prefix>-<slug>.<ext>"
+    },
+    "type": {
+      "type": "string",
+      "description": "Detected document type, e.g. 'bank_statement', 'policy_schedule', 'irp5', 'trust_deed'."
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "identity",
+        "living",
+        "finance",
+        "insurance",
+        "investments",
+        "assets",
+        "tax",
+        "estate",
+        "trusts",
+        "final-wishes",
+        "unclassified"
+      ]
+    },
+    "subject_ref": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/subjectRef" },
+    "period": {
+      "type": "object",
+      "properties": {
+        "from": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" },
+        "to": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/date" }
+      },
+      "additionalProperties": false
+    },
+    "pages": { "type": "integer", "minimum": 1 },
+    "ocr": { "type": "boolean" },
+    "bytes": { "type": "integer", "minimum": 0 },
+    "ingested_at": { "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant" },
+    "run_id": { "type": "string" },
+    "checksum_verified_at": {
+      "$ref": "https://lifeos.local/schemas/envelope.schema.json#/$defs/instant",
+      "description": "Periodic re-verification that the filed original still hashes to doc_hash."
+    },
+    "redacted": {
+      "type": "boolean",
+      "description": "Set by /forget. The index row survives as a tombstone with the hash; the original is gone."
+    }
+  },
+  "required": ["doc_hash", "original_path", "filed_path", "type", "domain", "ingested_at", "run_id"],
+  "additionalProperties": false
+}
