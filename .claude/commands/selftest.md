@@ -28,12 +28,13 @@ Run these and report each as PASS or FAIL:
 
 **One writer per ledger** — parse the ownership table in `docs/agent-catalogue.md`; fail on any ledger with zero or two writers.
 
-**No absolute paths** — the system repo must contain no hardcoded path under `/Users`:
+**Provenance, coverage, one-writer and absolute paths** — all four, plus schema validity and document integrity, are checked by one command:
+
 ```bash
-grep -rn "/Users/" --include="*.py" --include="*.mjs" --include="*.md" --include="*.json" tools/ .claude/ templates/ docs/ | grep -v "^docs/dependencies.md" || echo "PASS: no absolute paths"
+.venv/bin/python -m lifeos.audit --markdown
 ```
 
-**Coverage complete** — every leaf in `docs/coverage-map.md` has an owner that exists in `.claude/agents/` or is a named future phase; every named schema exists in `templates/schemas/`.
+It exits non-zero on any failure. Do not re-implement these checks inline here: an inline grep for a hardcoded path has to contain that path, which then trips the check it is testing.
 
 **Redaction holds** — the guard must block a seeded fake SA ID in both a web query and a `gh issue create` body:
 ```bash

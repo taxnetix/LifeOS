@@ -1,6 +1,6 @@
 # LifeOS — Documentation
 
-**Phases 0–6 are complete.** Design, the spine, ingestion/readiness/Life File, the financial flagship, cover and wealth, tax and estate, and the trusts pack are all on disk. Phase 7 remains.
+**All seven phases are complete.** Design, the spine, ingestion and readiness, the financial flagship, cover and wealth, tax and estate, the trusts pack, and the intelligence layer are all on disk.
 
 Source brief: [LIFE-OS-BOOTSTRAP-PROMPT.md](../LIFE-OS-BOOTSTRAP-PROMPT.md)
 

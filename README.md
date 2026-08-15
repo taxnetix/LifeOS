@@ -6,7 +6,7 @@ It ingests real documents — bank statements, policy schedules, medical aid pla
 
 Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
 
-> **Status: Phase 6 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. The trusts pack installs by merge rather than fork, so a colleague gets trust administration and none of anyone else's data. Intelligence and closure land next. See [the roadmap](#roadmap).
+> **Status: all 7 phases complete.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. `/audit` proves every figure traces to a page of a real document, and `/add-domain` grows a domain the loop picks up with no changes to the orchestrator. See [the roadmap](#roadmap).
 
 ## The idea in one paragraph
 
@@ -113,7 +113,7 @@ Optional domain bundles that layer onto the core by **merge, not fork** — one 
 | 4 | Cover and wealth — insurance, medical, investments, gap analysis | ✅ |
 | 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | ✅ |
 | 6 | Trusts pack, installable standalone | ✅ |
-| 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | next |
+| 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | ✅ |
 
 ## Documentation
 
