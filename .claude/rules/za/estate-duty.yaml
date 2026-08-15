@@ -1,0 +1,37 @@
+# Estate duty — Estate Duty Act 45 of 1955.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED. See README.md.
+# Estate planning decisions must not be made on these figures unverified.
+schema: rule/1
+rule: estate-duty
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/types-of-tax/estate-duty/
+verified: false
+refresh_interval: P1Y
+
+abatement_s4a: 3500000
+abatement_portable_between_spouses: true
+
+rates:
+  - {upto: 30000000, rate_pct: 20}
+  - {upto: null,     rate_pct: 25}
+
+section_4q:
+  description: Property accruing to a surviving spouse is deducted from the dutiable estate.
+  note: >
+    s4(q) defers duty, it does not remove it. The asset is taxed in the second
+    dying spouse's estate. A plan that celebrates a zero duty on the first death
+    without modelling the second has moved the problem, not solved it.
+
+deemed_property_s3_3_a_ii:
+  description: >
+    Proceeds of a domestic life policy on the deceased's life are deemed
+    property in the estate, with limited exceptions (buy-and-sell policies
+    meeting the requirements, and policies taken out by a third party who paid
+    the premiums).
+  note: >
+    A policy paid to a nominated beneficiary still attracts estate duty even
+    though it bypasses the estate for liquidity. Cover and duty are separate
+    questions, and conflating them understates the duty.

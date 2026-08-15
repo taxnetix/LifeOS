@@ -1,0 +1,36 @@
+# SA personal income tax — rates, rebates, thresholds.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED AGAINST SARS. See README.md.
+# Anything computed from this carries requires_verification: true.
+schema: rule/1
+rule: income-tax
+jurisdiction: za
+tax_year: 2026                 # 1 Mar 2025 – 28 Feb 2026
+as_at: "2025-02-19"            # Budget 2025
+source: https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/
+verified: false
+refresh_interval: P1Y
+
+# Marginal brackets. `upto` is the top of the band; the last band has no ceiling.
+brackets:
+  - {upto: 237100,  rate_pct: 18}
+  - {upto: 370500,  rate_pct: 26}
+  - {upto: 512800,  rate_pct: 31}
+  - {upto: 673000,  rate_pct: 36}
+  - {upto: 857900,  rate_pct: 39}
+  - {upto: 1817000, rate_pct: 41}
+  - {upto: null,    rate_pct: 45}
+
+rebates:
+  primary: 17235               # all taxpayers
+  secondary: 9444              # additional, age 65+
+  tertiary: 3145               # additional, age 75+
+
+thresholds:                     # income below which no tax is payable
+  under_65: 95750
+  age_65_to_74: 148217
+  age_75_plus: 165689
+
+interest_exemption:
+  under_65: 23800
+  age_65_plus: 34500

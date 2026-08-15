@@ -1,0 +1,33 @@
+# Capital gains tax, including the deemed disposal at death — Eighth Schedule.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED. See README.md.
+schema: rule/1
+rule: cgt
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/types-of-tax/capital-gains-tax/
+verified: false
+refresh_interval: P1Y
+
+inclusion_rate_pct:
+  individual: 40
+  company: 80
+  trust: 80
+
+annual_exclusion: 40000
+death_year_exclusion: 300000
+primary_residence_exclusion: 2000000
+
+death:
+  description: >
+    Death is a deemed disposal of all assets at market value, so unrealised
+    gains crystallise and become payable by the estate in cash.
+  exempt:
+    - Assets accruing to a surviving spouse (roll-over; base cost carries over).
+    - Retirement fund interests.
+    - Domestic life policy proceeds.
+  note: >
+    This is the single largest surprise in most estates: a property held for
+    twenty years generates a tax bill on death that the family must pay in cash,
+    from an estate that is frozen.

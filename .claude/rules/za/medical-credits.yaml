@@ -1,0 +1,23 @@
+# Medical scheme fees tax credits — s6A, and the additional credit s6B.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED AGAINST SARS. See README.md.
+schema: rule/1
+rule: medical-credits
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/types-of-tax/personal-income-tax/tax-rates/medical-tax-credits/
+verified: false
+refresh_interval: P1Y
+
+# Monthly credits, per beneficiary.
+main_member: 364
+first_dependant: 364
+each_additional_dependant: 246
+
+additional_credit_s6b:
+  note: >
+    A further credit applies to out-of-pocket medical expense and to
+    contributions above a multiple of the s6A credit. The formula differs for
+    taxpayers 65+ and for those with a disability, and it needs the full
+    assessment to compute. LifeOS flags that it may apply; it does not compute it.

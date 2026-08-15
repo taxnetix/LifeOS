@@ -1,0 +1,19 @@
+# Deduction for retirement fund contributions — s11F.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED AGAINST SARS. See README.md.
+schema: rule/1
+rule: retirement-deduction
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/types-of-tax/personal-income-tax/tax-season/retirement-fund-contributions/
+verified: false
+refresh_interval: P1Y
+
+# 27.5% of the GREATER of remuneration or taxable income, capped annually.
+percentage_of_income: 27.5
+annual_cap: 350000
+note: >
+  Contributions above the cap are not lost — they roll forward and reduce the
+  taxable portion of the eventual lump sum or annuity. "Over-contributed" is
+  therefore a timing observation, not a loss, and must not be reported as waste.

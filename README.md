@@ -6,7 +6,7 @@ It ingests real documents — bank statements, policy schedules, medical aid pla
 
 Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
 
-> **Status: Phase 4 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax and estate land next. See [the roadmap](#roadmap).
+> **Status: Phase 5 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. The trusts pack lands next. See [the roadmap](#roadmap).
 
 ## The idea in one paragraph
 
@@ -53,7 +53,8 @@ vault/       VAULT    your real life. Git-ignored. Never leaves your machine.
 | `/dashboard` · `/optimise` | Cashflow dashboard · ranked, costed findings |
 | `/review cover` | **The consolidated health and risk map** — what no single document says |
 | `/review <domain>` | Deep review of one domain |
-| `/deadlines` · `/ask` · `/what-if` · `/life-event` | Due dates · cross-domain Q&A with citations · scenarios · cascades |
+| `/deadlines` | Everything due, with lead times and why it applies to you |
+| `/ask` · `/what-if` · `/life-event` | Cross-domain Q&A with citations · scenarios · cascades |
 | `/issues` | The system's own backlog on GitHub |
 | `/consolidate` · `/audit` · `/add-domain` · `/forget` | Memory ritual · provenance proof · self-extension · POPIA erasure |
 
@@ -70,6 +71,8 @@ Full contracts: [docs/commands.md](docs/commands.md).
 **Nothing personal leaves the machine.** A `PreToolUse` hook blocks any outbound call — web, `curl`, or `gh` — carrying an SA ID number, an account number, or a name from your profile. It is a mechanism, not a policy, so it holds even when an agent is wrong.
 
 **It maintains itself.** Agents file GitHub issues about the *system* — a bank changed its statement layout, a tax table is past its refresh interval — never about your life. That boundary is enforced by the same hook.
+
+**It never states a tax rate from memory.** Rates, thresholds and abatements live in dated rulebooks that carry a source and a `verified` flag. The ones shipped are marked unverified — written from memory, not checked against SARS — so every figure built on them arrives with that caveat attached. The system reports its own rulebooks as a year out of date, because they are.
 
 **It sees what no single document says.** The medical scheme covers hospital, the gap policy covers the shortfall it leaves, the employer covers part of your income, and a personal policy covers a part that may not stack with it. Each document is silent about the others. `/review cover` reads them together and names the duplication, the cover that ends with your job, and the hole where day-to-day care falls between the two.
 
@@ -96,8 +99,8 @@ No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, ne
 | 2 | Ingestion, provenance, readiness, the Life File | ✅ |
 | 3 | Financial flagship — statements → dashboard → optimisation | ✅ |
 | 4 | Cover and wealth — insurance, medical, investments, gap analysis | ✅ |
-| 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | next |
-| 6 | Trusts pack, installable standalone | |
+| 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | ✅ |
+| 6 | Trusts pack, installable standalone | next |
 | 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | |
 
 ## Documentation

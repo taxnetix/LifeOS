@@ -1,6 +1,6 @@
 # LifeOS — Documentation
 
-**Phases 0–4 are complete.** Design, the spine, ingestion/readiness/Life File, the financial flagship, and the cover-and-wealth domains are all on disk. Phases 5–7 remain.
+**Phases 0–5 are complete.** Design, the spine, ingestion/readiness/Life File, the financial flagship, cover and wealth, and tax and estate are all on disk. Phases 6–7 remain.
 
 Source brief: [LIFE-OS-BOOTSTRAP-PROMPT.md](../LIFE-OS-BOOTSTRAP-PROMPT.md)
 

@@ -1,0 +1,34 @@
+# Executor's remuneration and Master's fees.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED. See README.md.
+schema: rule/1
+rule: estate-fees
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.justice.gov.za/master/deceased.html
+verified: false
+refresh_interval: P1Y
+
+executor:
+  max_pct_of_gross_estate: 3.5
+  pct_on_income_after_death: 6.0
+  vat_applies: true
+  vat_pct: 15
+  note: >
+    3.5% is the maximum prescribed tariff, not a fixed price, and it is
+    negotiable — commonly downward, and best negotiated when the will is drafted
+    rather than by a grieving family. On a R10m estate the difference between
+    3.5% and 2% is R150 000 plus VAT.
+
+master:
+  # Sliding scale on gross estate value, capped.
+  scale:
+    - {upto: 250000,   fee: 600}
+    - {upto: 400000,   fee: 1200}
+    - {upto: 600000,   fee: 1800}
+    - {upto: 800000,   fee: 2400}
+    - {upto: 1000000,  fee: 3000}
+    - {upto: 2000000,  fee: 3600}
+    - {upto: null,     fee: 7000}
+  cap: 7000

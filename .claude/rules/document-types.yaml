@@ -128,8 +128,17 @@ types:
 
   title_deed:
     domain: assets
-    strong: ["deed of transfer", "title deed", "registrar of deeds"]
-    any: ["erf", "portion", "township", "extent", "conveyancer", "mortgage bond"]
+    strong: ["deed of transfer", "title deed", "registrar of deeds", "deed number"]
+    any: ["erf", "portion", "township", "extent", "conveyancer", "mortgage bond",
+          "registered owner", "municipal valuation", "endorsements"]
+    routes_to: assets
+
+  home_loan_statement:
+    domain: assets
+    require: ["home loan"]
+    strong: ["home loan statement", "loan account number", "outstanding balance"]
+    any: ["secured property", "instalment", "interest rate", "borrower",
+          "linked to prime", "loan ends"]
     routes_to: assets
 
   deed_of_grave:

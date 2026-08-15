@@ -135,3 +135,45 @@ types:
       funeral:
         kind: funeral
         pattern: '(?i:funeral benefit)\s+(R\s?[\d  ,.]+\d)'
+
+  title_deed:
+    ledger: assets
+    fields:
+      deed_no:          {pattern: '^(?i:deed number)\s+(\S.*?)\s*$'}
+      description:      {pattern: '^(?i:property description)\s+(\S.*?)\s*$'}
+      township:         {pattern: '^(?i:township)\s+(\S.*?)\s*$'}
+      owner_name:       {pattern: '^(?i:registered owner)\s+(\S.*?)\s*$'}
+      acquired_on:      {pattern: '^(?i:date of transfer)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      # Base cost drives CGT on the deemed disposal at death. Its absence must
+      # be a gap, never a zero — a zero base cost overstates the gain by the
+      # entire purchase price.
+      base_cost:        {pattern: '^(?i:purchase price)\s+(\S.*?)\s*$', type: money}
+      municipal_value:  {pattern: '^(?i:municipal valuation)\s+(\S.*?)\s*$', type: money}
+      deed_location:    {pattern: '^(?i:title deed held by)\s+(\S.*?)\s*$'}
+      bond_ref:         {pattern: '^(?i:mortgage bond)\s+(\S.*?)\s*$'}
+
+  home_loan_statement:
+    ledger: liabilities
+    fields:
+      account_no:       {pattern: '^(?i:loan account number)\s+(\S.*?)\s*$'}
+      debtor_name:      {pattern: '^(?i:borrower)\s+(\S.*?)\s*$'}
+      secured_property: {pattern: '^(?i:secured property)\s+(\S.*?)\s*$'}
+      balance:          {pattern: '^(?i:outstanding balance)\s+(\S.*?)\s*$', type: money}
+      balance_as_at:    {pattern: '^(?i:balance as at)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      rate_pct:         {pattern: '^(?i:interest rate)\s+([\d.]+)\s*%', type: pct}
+      instalment:       {pattern: '^(?i:monthly instalment)\s+(\S.*?)\s*$', type: money}
+      ends_on:          {pattern: '^(?i:loan ends on)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      creditor_fallback: {pattern: '^([A-Z][A-Z&()\.\- ]{6,60})\s*$'}
+
+  will:
+    ledger: wills
+    kind: will
+    fields:
+      testator:         {pattern: '(?i:^of\s+|^)([A-Z]\s?[A-Z][A-Za-z ]{2,40}?)\s*\((?i:identity number)'}
+      signed_at:        {pattern: '(?i:signed at)\s+([A-Za-z ]+?)\s+on\s+\d'}
+      signed_on:        {pattern: '(?i:signed at[^\n]*on)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      executor:         {pattern: '(?i:i nominate)\s+(.+?)\s+(?:of\s+[A-Z][a-z]+\s+)?as executor'}
+      guardian:         {pattern: '(?i:i nominate my [a-z]+,\s*)([A-Z]\s?[A-Za-z ]+?),\s*(?i:as guardian)'}
+      residuary_heir:   {pattern: '(?i:i bequeath my entire estate to my [a-z]+,\s*)([A-Z]\s?[A-Za-z ]+?)\s*[.,]'}
+      substitute_heir:  {pattern: '(?i:devolve upon the)\s+([A-Z][A-Za-z ]+?)\s*\('}
+      revokes_previous: {pattern: '(?i:(i revoke all previous wills))'}

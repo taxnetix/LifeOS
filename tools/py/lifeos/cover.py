@@ -77,6 +77,39 @@ def extract_fields(text: str, spec: dict) -> tuple[dict, list[str]]:
     return values, missing
 
 
+_BENEFICIARY_ROW = re.compile(
+    r"^(?P<name>[A-Z][A-Za-z&' ]{2,50}?)\s*(?:\((?P<rel>[a-z ]+)\))?\s+(?P<pct>\d{1,3}(?:\.\d+)?)\s*%\s*$",
+    re.M,
+)
+
+
+def extract_beneficiaries(text: str) -> list[dict]:
+    """Nomination rows from a schedule's beneficiary section.
+
+    A nomination OVERRIDES the will for that asset, so failing to read it means
+    failing to detect the single highest-value estate finding LifeOS can
+    produce. Rows outside a beneficiary heading are ignored — a stray
+    percentage elsewhere on the page is not a nomination.
+    """
+    section = None
+    for heading in ("Beneficiary nomination", "Beneficiaries", "Beneficiary"):
+        i = text.find(heading)
+        if i != -1:
+            section = text[i: i + 600]
+            break
+    if section is None:
+        return []
+    out = []
+    for m in _BENEFICIARY_ROW.finditer(section):
+        try:
+            pct = float(m.group("pct"))
+        except ValueError:
+            continue
+        out.append({"name": m.group("name").strip(), "pct": pct,
+                    **({"relationship": m.group("rel").strip()} if m.group("rel") else {})})
+    return out
+
+
 def _classify_policy(policy_type: str | None, spec: dict) -> tuple[str, str | None]:
     if not policy_type:
         return "life", None
@@ -146,7 +179,9 @@ def build(*, dry_run: bool = False) -> dict:
     subject = _subject(profile)
     index = list(atomic.read_jsonl(vault.path("documents", "index.jsonl")))
 
-    records: dict[str, list[dict]] = {"policies": [], "medical-aid": [], "employee-benefits": []}
+    records: dict[str, list[dict]] = {"policies": [], "medical-aid": [],
+                                      "employee-benefits": [], "assets": [],
+                                      "liabilities": [], "valuations": [], "wills": []}
 
     for doc in index:
         spec = rules["types"].get(doc.get("type"))
@@ -212,6 +247,15 @@ def build(*, dry_run: bool = False) -> dict:
                 rec["waiting_periods"] = [{"kind": "general", "months": int(values["waiting_period"])}]
             if "ceded_to" in values:
                 rec["cession"] = {"to": values["ceded_to"], "kind": "security"}
+            bens = extract_beneficiaries(text)
+            if bens:
+                rec["beneficiaries"] = [
+                    {"pct": b["pct"],
+                     **({"person_ref": _person_by_name(profile, b["name"])}
+                        if _person_by_name(profile, b["name"]) else {}),
+                     "name": b["name"]}
+                    for b in bens
+                ]
             records["policies"].append(rec)
             entry["ref"] = ref
             entry["class"] = cls
@@ -263,6 +307,97 @@ def build(*, dry_run: bool = False) -> dict:
             records["medical-aid"].append(rec)
             entry["ref"] = ref
 
+        elif target == "wills":
+            testator = _person_by_name(profile, values.get("testator")) or subject
+            ref = f"will_{_slug(values.get('testator', 'testator'))}"
+            rec = {
+                **_envelope(rec_id=ledger.record_id(dh, loc, ref), schema="wills/1",
+                            subject=subject, doc_hash=dh, locator=loc, confidence=conf,
+                            valid_from=values.get("signed_on") or clock.today()),
+                "ref": ref, "testator_ref": testator, "kind": "will",
+                # A will is only a will once signed. Absent evidence of a
+                # signature the answer is "unknown", and the readiness score
+                # treats that as the catastrophic gap it is.
+                "signed": bool(values.get("signed_on")),
+                "doc_hash": dh,
+            }
+            if "signed_on" in values:
+                rec["signed_on"] = values["signed_on"]
+            if "executor" in values:
+                rec["executor"] = {"name": values["executor"]}
+            for src, note in (("residuary_heir", "residuary heir"),
+                              ("substitute_heir", "substitute heir"),
+                              ("guardian", "guardian")):
+                if src in values:
+                    rec.setdefault("review_triggers", []).append(f"{note}: {values[src]}")
+            records["wills"].append(rec)
+            entry["ref"] = ref
+            entry["heirs"] = {k: values[k] for k in
+                              ("residuary_heir", "substitute_heir", "guardian",
+                               "executor") if k in values}
+
+        elif target == "assets":
+            ref = f"ast_{_slug(values.get('deed_no') or values.get('description', 'property'))}"
+            rec = {
+                **_envelope(rec_id=ledger.record_id(dh, loc, ref), schema="assets/1",
+                            subject=subject, doc_hash=dh, locator=loc, confidence=conf,
+                            valid_from=values.get("acquired_on") or clock.today()),
+                "ref": ref, "owner_ref": subject, "class": "property",
+                "kind": "residential",
+                "description": values.get("description") or "property",
+                "doc_hash": dh,
+            }
+            for src, dst in (("acquired_on", "acquired_on"),
+                             ("deed_location", "title_deed_location")):
+                if src in values:
+                    rec[dst] = values[src]
+            # Base cost drives CGT at death. Without it the deemed disposal
+            # cannot be computed, so its absence must be a gap, not a zero.
+            if "base_cost" in values:
+                rec["base_cost"] = money.money(values["base_cost"])
+            records["assets"].append(rec)
+            entry["ref"] = ref
+
+            # A municipal valuation is NOT a market value. Recording the basis
+            # matters more than the number: municipal values commonly lag the
+            # market by years, in either direction.
+            if "municipal_value" in values:
+                vref = f"{ref}_municipal"
+                records["valuations"].append({
+                    **_envelope(rec_id=ledger.record_id(dh, "valuation", vref),
+                                schema="valuations/1", subject=subject, doc_hash=dh,
+                                locator="valuation", confidence=conf,
+                                valid_from=values.get("acquired_on") or clock.today()),
+                    "asset_ref": ref,
+                    "as_at": values.get("acquired_on") or clock.today(),
+                    "value": money.money(values["municipal_value"]),
+                    "basis": "municipal",
+                    "doc_hash": dh,
+                })
+
+        elif target == "liabilities":
+            creditor = values.get("creditor_fallback") or "unknown creditor"
+            ref = f"lia_{_slug(creditor)}_home_loan"
+            rec = {
+                **_envelope(rec_id=ledger.record_id(dh, loc, ref), schema="liabilities/1",
+                            subject=subject, doc_hash=dh, locator=loc, confidence=conf,
+                            valid_from=values.get("balance_as_at") or clock.today()),
+                "ref": ref, "debtor_ref": subject, "kind": "home_loan",
+                "creditor": creditor, "doc_hash": dh,
+            }
+            if "balance" in values:
+                rec["balance"] = money.money(values["balance"])
+            for src, dst in (("balance_as_at", "balance_as_at"), ("ends_on", "ends_on"),
+                             ("account_no", "account_no")):
+                if src in values:
+                    rec[dst] = values[src]
+            if "instalment" in values:
+                rec["instalment"] = money.money(values["instalment"])
+            if "rate_pct" in values:
+                rec["rate"] = {"kind": "linked_to_prime", "pct": values["rate_pct"]}
+            records["liabilities"].append(rec)
+            entry["ref"] = ref
+
         elif target == "employee-benefits":
             employer = values.get("employer") or "unknown employer"
             person = _person_by_name(profile, values.get("member")) or subject
@@ -303,6 +438,15 @@ def build(*, dry_run: bool = False) -> dict:
                     rec["member_no"] = values["fund_member_no"]
                 if "statement_as_at" in values:
                     rec["statement_as_at"] = values["statement_as_at"]
+                bens = extract_beneficiaries(text)
+                if bens and bspec["kind"] in {"group_life", "provident", "pension"}:
+                    rec["beneficiaries"] = [
+                        {"pct": b["pct"],
+                         **({"person_ref": _person_by_name(profile, b["name"])}
+                            if _person_by_name(profile, b["name"]) else {}),
+                         "name": b["name"]}
+                        for b in bens
+                    ]
                 if salary and bspec["kind"] in {"provident", "pension"}:
                     for src, who in (("member_contrib", "employee"),
                                      ("employer_contrib", "employer")):
@@ -319,8 +463,12 @@ def build(*, dry_run: bool = False) -> dict:
         out["documents"].append(entry)
 
     out["ledgers"] = {
-        name: ledger.write(name, recs, agent={"policies": "insurance"}.get(name, "living"),
-                           run_id=run.id, dry_run=dry_run)
+        name: ledger.write(
+            name, recs,
+            agent={"policies": "insurance", "assets": "assets",
+                   "liabilities": "assets", "valuations": "assets",
+                   "wills": "estate"}.get(name, "living"),
+            run_id=run.id, dry_run=dry_run)
         for name, recs in records.items() if recs
     }
     out["totals"] = {

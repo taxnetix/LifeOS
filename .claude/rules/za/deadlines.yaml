@@ -1,0 +1,24 @@
+# Filing and payment deadlines, with the lead time work should start.
+#
+# Dates are structural (they recur), not Budget-dependent, so this rulebook is
+# more stable than the rate tables. Filing-season OPENING dates are announced
+# annually and are the part most likely to move.
+schema: rule/1
+rule: deadlines
+jurisdiction: za
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/important-dates/
+verified: false
+refresh_interval: P1Y
+
+obligations:
+  - {kind: irp6_1,      label: "Provisional tax IRP6 — period 1", applies_to: provisional_taxpayer, month: 8,  day: 31, lead_days: 30}
+  - {kind: irp6_2,      label: "Provisional tax IRP6 — period 2", applies_to: provisional_taxpayer, month: 2,  day: 28, lead_days: 30, leap_aware: true}
+  - {kind: itr12,       label: "Personal income tax return (ITR12)", applies_to: individual, month: 10, day: 20, lead_days: 30}
+  - {kind: tax_year_end, label: "Tax year end — last day for RA top-up, TFSA and CGT harvesting", applies_to: individual, month: 2, day: 28, lead_days: 60, leap_aware: true}
+  - {kind: emp201,      label: "PAYE/UIF/SDL (EMP201)", applies_to: employer, month: null, day: 7,  lead_days: 5,  frequency: monthly}
+  - {kind: vat201,      label: "VAT return (VAT201)", applies_to: vat_vendor, month: null, day: 25, lead_days: 7, frequency: bi_monthly}
+  - {kind: itr14,       label: "Company income tax return (ITR14)", applies_to: company, months_after_year_end: 12, lead_days: 60}
+  - {kind: it12tr,      label: "Trust income tax return (IT12TR)", applies_to: trust, month: 10, day: 20, lead_days: 90}
+  - {kind: afs,         label: "Annual financial statements", applies_to: [company, trust], months_after_year_end: 6, lead_days: 60}
+  - {kind: bo_register, label: "Beneficial ownership register (Master)", applies_to: trust, months_after_year_end: 12, lead_days: 90}

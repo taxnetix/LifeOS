@@ -1,0 +1,19 @@
+# Tax-free savings account limits.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED AGAINST SARS. See README.md.
+schema: rule/1
+rule: tfsa-limits
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/types-of-tax/personal-income-tax/tax-free-investments/
+verified: false
+refresh_interval: P1Y
+
+annual_limit: 36000
+lifetime_limit: 500000
+penalty_pct: 40
+note: >
+  Contributions above either limit attract 40% tax on the excess. The lifetime
+  limit counts CONTRIBUTIONS, never growth, and a withdrawal does not restore
+  room — a withdrawn rand can never be re-contributed.

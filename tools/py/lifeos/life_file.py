@@ -254,25 +254,50 @@ def s_will(ctx: Ctx) -> str:
 
 
 def s_liquidity(ctx: Ctx) -> str:
-    wishes = _ledger("final-wishes")
-    plan = next((w.get("thirty_day_liquidity") for w in wishes
-                 if w.get("thirty_day_liquidity")), None)
-    if not plan:
+    """The first-30-days number, computed from the estate model.
+
+    Written by hand it would be a guess; computed it is a fact with sources.
+    """
+    from . import money as _m
+
+    try:
+        from . import estate
+        rep = estate.report()
+        liq = rep.get("liquidity") if not rep.get("error") else None
+    except Exception:  # noqa: BLE001 — the Life File must render regardless
+        liq = None
+
+    if not liq:
         return f"""<section><h2>5 · Money in the first 30 days</h2>
-        {_empty('No thirty-day liquidity plan exists.',
+        {_empty('No thirty-day liquidity plan could be computed.',
                 'An estate is frozen at death. Without reachable cash the family cannot '
                 'pay for the funeral, the bond or the groceries — however solvent the '
                 'estate looks on paper.')}</section>"""
-    amt = plan.get("amount", {})
-    src = "".join(
-        f"<tr><td>{e(s['description'])}</td><td class='n'>R {s['amount']['cents']/100:,.2f}</td>"
-        f"<td class='n'>{e(s['days_to_access'])} days</td></tr>"
-        for s in plan.get("sources", [])
+
+    immediate = liq["immediate_30day_cents"]
+    rows = "".join(
+        f"<tr><td>{e(s['label'])}</td>"
+        f"<td class='n'>{e(_m.fmt(s.get('amount_available_cents', s['amount_cents'])))}</td>"
+        f"<td class='n'>{e(str(s['days_to_access']) + ' days') if s.get('available') else '<b>frozen</b>'}</td></tr>"
+        for s in liq["sources"]
     )
+    warn = ""
+    if liq.get("timing_risk"):
+        warn = (
+            f'<p class="missing"><strong>That is about '
+            f'{liq["months_of_expenses_covered"]} months of household spending.</strong> '
+            f'The estate is not short of money — it is short of REACHABLE money. Bank '
+            f'accounts freeze at death, including joint accounts, and anything falling '
+            f'into the estate takes months. A small policy paid to a nominated '
+            f'beneficiary is the usual fix.</p>'
+        )
     return f"""<section><h2>5 · Money in the first 30 days</h2>
-    <p class="big">R {amt.get('cents', 0)/100:,.2f} reachable</p>
+    <p class="big">{e(_m.fmt(immediate))} reachable within 30 days</p>
+    {warn}
     <table class="tbl"><tr><th>Source</th><th class="n">Amount</th><th class="n">Available in</th></tr>
-    {src}</table></section>"""
+    {rows}</table>
+    <p class="det">Total eventually reachable: {e(_m.fmt(liq["available_cents"]))}. Falling
+    due at death: {e(_m.fmt(liq["needed_cents"]))}.</p></section>"""
 
 
 def s_documents(ctx: Ctx) -> str:

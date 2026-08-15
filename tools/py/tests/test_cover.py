@@ -279,16 +279,30 @@ def test_net_worth_includes_holdings_once_they_exist(cover_vault):
     assert any(c["ledger"] == "holdings" for c in after["components"])
 
 
-def test_net_worth_names_every_ledger_it_is_missing(cover_vault):
-    """A net worth that quietly omits the house is worse than none."""
+def test_net_worth_names_every_ledger_it_is_missing(cover_vault, vault_dir):
+    """A net worth that quietly omits the house is worse than none.
+
+    Emptying a ledger directly rather than relying on a fixture happening to be
+    empty: as more document types became extractable, the fixture vault stopped
+    having empty ledgers, and a test whose premise quietly evaporates stops
+    testing anything.
+    """
     _, cover, _, investments, finance, analyse, _ = cover_vault
     cover.build()
     finance.build()
     investments.build()
+
+    complete = analyse.net_worth()
+    assert complete["partial"] is False, "the fixture vault now covers every ledger"
+
+    (vault_dir / "ledgers" / "assets.jsonl").write_text("")
+    (vault_dir / "ledgers" / "liabilities.jsonl").write_text("")
     nw = analyse.net_worth()
     assert nw["partial"] is True
-    assert "assets" in nw["missing_ledgers"] and "liabilities" in nw["missing_ledgers"]
-    assert "property and movables" in nw["note"] and "debt" in nw["note"]
+    assert {"assets", "liabilities"} <= set(nw["missing_ledgers"])
+    for phrase in ("property and movables", "debt"):
+        assert phrase in nw["note"], nw["note"]
+    assert nw["assets_cents"] < complete["assets_cents"]
 
 
 def test_every_net_worth_component_traces_to_a_record(cover_vault):
