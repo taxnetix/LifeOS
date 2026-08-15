@@ -70,6 +70,39 @@ vault/       VAULT    your real life. Git-ignored. Never leaves your machine.
 
 Full contracts: [docs/commands.md](docs/commands.md).
 
+## Meet the agents
+
+Seventeen agents, one contract. Every one is a file in [`.claude/agents/`](.claude/agents/), generated from the same seven-part charter in [templates/AGENT_CHARTER.md](templates/AGENT_CHARTER.md): what it owns, what it explicitly does *not* own, its inputs, its outputs, its state file, its cadence, and what "done" means. **Exactly one agent may write any given ledger** — a `/selftest` check parses the charters and fails if a ledger has zero owners or two.
+
+### System agents — the machinery
+
+| Agent | What it owns | Dispatched on |
+|---|---|---|
+| **`orchestrator`** | The loop, the queue, the cursors, the journal, cross-domain integration. The **only** component that spawns agents — domains ask, they never nest. | `/heartbeat` |
+| **`librarian`** | `inbox/` → `documents/`. Classifies, names, files immutably, dedupes by hash, indexes and routes. Never interprets — and never loses an original. | `/ingest`, any new file |
+| **`memory-keeper`** | All three memory tiers and the consolidation ritual. Promotes durable facts, expires stale ones, and **surfaces contradictions rather than resolving them**. | `/consolidate` |
+| **`meta-architect`** | The system's own structure and backlog — scaffolding, coverage audits, the agent catalogue, GitHub issues. Touches no vault data, which is what makes it safe to let it write in public. | `/add-domain`, `/issues` |
+| **`analyst`** *(service)* | Nothing. Aggregation, trend, variance, ratio, projection and scenario mathematics for whoever asks. Every figure returns with its formula and the record ids it came from. | On request |
+| **`visualiser`** *(service)* | Rendering only — self-contained HTML, markdown, CSV. Computes no figure. If it finds itself calculating, a number has escaped its provenance. | `/dashboard`, reports |
+
+### Domain agents — the life
+
+| Agent | What it owns | Dispatched on |
+|---|---|---|
+| **`identity`** | People, entities and the relationship graph that ties every person to every obligation, asset and benefit elsewhere. **Every other domain depends on it** — it is what makes cross-domain analysis possible at all. | ID documents, any new person |
+| **`finance`** | Accounts, transactions, recurring payments, budgets, net worth. Carries the flagship pipeline: statements → categorised ledger → dashboard → variance → ranked findings. | Bank and card statements, `/dashboard`, `/optimise` |
+| **`living`** | The health stack (scheme **and** gap cover), employer benefits, subscriptions, digital estate, household access, leases. Gap cover lives here, not in `insurance`, because it pays what the scheme leaves. | Medical aid and benefit statements, `/review living` |
+| **`insurance`** | Every policy — life, capital disability, income protection, dread disease, funeral, short-term, business. Needs-versus-cover, duplication against group benefits, the cover map. | Policy schedules, `/review insurance` |
+| **`investments`** | RAs, preservation and occupational funds, unit trusts, shares, offshore, TFSA, crypto. Allocation drift, Reg 28 compliance, total-expense-ratio drag. | Investment statements, `/review investments` |
+| **`assets`** | Property, movables, rights, liabilities, valuations, FX. **Suretyship is a required field**, not an optional one — it is the item most often forgotten and most damaging at death. | Title deeds, bond and vehicle documents |
+| **`tax`** | The deadline calendar, medical credits, retirement-deduction headroom, TFSA limits, effective-rate tracking — for individuals, companies and trusts. Prepares, computes and flags. **Never files.** | IRP5, IT3(b), assessments, `/deadlines` |
+| **`estate`** | Wills, beneficiaries, estate duty and CGT at death, executor and Master fees, the liquidity shortfall, and the beneficiary-versus-will conflict check no single document can see. | Wills, `/review estate` |
+| **`trusts`** *(pack)* | The trust register, trustees and their independence, resolutions, beneficiaries by class and vesting, loan accounts and **s7C exposure**, distributions, the Master and SARS calendar. | Trust deeds, `/trust-review` |
+| **`final-wishes`** | Burial versus cremation, plot details, ashes, funeral contacts, and the thirty-day liquidity plan. Deliberately separate from `estate`: this is what a family reads first, and it must be answerable without a lawyer. | Deed of grave, `/life-file` |
+| **`readiness`** | The Life File checklist as a live score — every required document, present, absent or expired, and where the original is. Composes **the Life File** itself. | `/readiness`, `/life-file` |
+
+Every agent ends its run by answering three questions — *what do I now know that I didn't; what is still missing; what would make me more useful next time?* — and those answers become work items and memory candidates. Full charters and the authoritative ledger-ownership table: [docs/agent-catalogue.md](docs/agent-catalogue.md).
+
 ## What makes it different
 
 **It runs on a loop, not on demand.** SENSE is a Python script, not a reasoning step, so an idle heartbeat is milliseconds plus one short turn. The system notices an elapsed cadence, an expiring policy, a stale rulebook — not just a new file.

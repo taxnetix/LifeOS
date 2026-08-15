@@ -157,6 +157,29 @@ h2.sec{font-size:clamp(27px,3.4vw,38px);line-height:1.16;letter-spacing:-1px;
 .logo-lockup:hover .itax-logo{opacity:.82}
 .alt{background:var(--card-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
 
+/* ── agent roster ───────────────────────────────────────────────────────── */
+/* This section follows a non-alt one, so it carries its own top rule rather
+   than the .alt band — two adjacent .alt sections double the border. */
+#agents{border-top:1px solid var(--border)}
+.roster-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px;margin:46px 0 0}
+.roster-h h3{font-size:19px;margin:0;letter-spacing:-.3px;font-weight:600}
+.roster-h span{font-size:13.5px;color:var(--muted)}
+.roster{display:grid;gap:14px;margin-top:20px;grid-template-columns:1fr}
+@media(min-width:640px){.roster{grid-template-columns:1fr 1fr}}
+@media(min-width:1000px){.roster{grid-template-columns:repeat(3,1fr)}}
+.agent{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:20px 22px;box-shadow:var(--shadow);
+  transition:border-color .18s,transform .18s}
+.agent:hover{border-color:color-mix(in srgb,var(--brand-500) 45%,var(--border));
+  transform:translateY(-2px)}
+.agent .n{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 9px}
+.agent .n code{font-size:13.5px;font-weight:600}
+.agent .tag{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);border-radius:999px;
+  padding:2px 9px;background:var(--card-2)}
+.agent p{margin:0;font-size:14px;color:var(--muted);line-height:1.6}
+.agent strong{color:var(--fg);font-weight:600}
+
 /* ── finding callout ────────────────────────────────────────────────────── */
 .finding{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--brand-500);
   border-radius:0 18px 18px 0;padding:26px 30px;margin-top:22px;box-shadow:var(--shadow)}
@@ -292,6 +315,7 @@ pre code{background:none;padding:0;color:var(--fg)}
     </a>
     <nav>
       <a href="#what">What it is</a>
+      <a href="#agents">The agents</a>
       <a href="#life-file">The Life File</a>
       <a href="#findings">What it finds</a>
       <a href="#intellitax">IntelliTax</a>
@@ -327,7 +351,7 @@ pre code{background:none;padding:0;color:var(--fg)}
       <div class="included">
         <h2>What's included</h2>
         <ul>
-          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>17 domain agents, one contract</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>17 agents, one charter</li>
           <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Document ingestion with provenance</li>
           <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Bank statements to a categorised ledger</li>
           <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Consolidated health &amp; risk cover map</li>
@@ -387,9 +411,117 @@ pre code{background:none;padding:0;color:var(--fg)}
 
       <div class="stats">
         <div class="stat"><div class="n">274</div><div class="l">tests passing</div></div>
-        <div class="stat"><div class="n">17</div><div class="l">domain agents</div></div>
+        <div class="stat"><div class="n">17</div><div class="l">agents, one charter</div></div>
         <div class="stat"><div class="n">42</div><div class="l">JSON schemas</div></div>
         <div class="stat"><div class="n">176</div><div class="l">life-file leaves</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── meet the agents ──────────────────────────────────────────────── -->
+  <section id="agents">
+    <div class="wrap">
+      <p class="eyebrow">Meet the agents</p>
+      <h2 class="sec">Seventeen agents, one contract</h2>
+      <p class="lead">
+        Every agent is a file in <code>.claude/agents/</code>, generated from the
+        same seven-part charter: what it owns, what it explicitly does
+        <em>not</em> own, its inputs, outputs, state file, cadence, and what
+        “done” means. Six run the machinery; eleven hold a piece of the life.
+      </p>
+
+      <div class="roster-h">
+        <h3>System agents</h3>
+        <span>the machinery — no life data of their own</span>
+      </div>
+      <div class="roster">
+        <div class="agent">
+          <p class="n"><code>orchestrator</code><span class="tag">the loop</span></p>
+          <p>Owns the loop, the queue, the cursors and the journal. The <strong>only</strong> component that spawns agents — a domain that needs a specialist asks, and agents never nest.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>librarian</code><span class="tag">ingestion</span></p>
+          <p>Inbox to documents. Classifies, names, files immutably, dedupes by hash and routes to the owning domain. It classifies; it does not interpret — and it <strong>never loses an original</strong>.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>memory-keeper</code><span class="tag">memory</span></p>
+          <p>All three memory tiers and the consolidation ritual. Promotes durable facts, expires stale ones, and <strong>surfaces contradictions rather than resolving them</strong>.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>meta-architect</code><span class="tag">the system</span></p>
+          <p>The system's own structure and backlog — scaffolding, coverage audits, GitHub issues. It touches no vault data, which is exactly what makes it safe to let it write in public.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>analyst</code><span class="tag">shared service</span></p>
+          <p>Aggregation, trend, variance, projection and scenario mathematics for whoever asks. Owns no ledger and writes none. <strong>Every figure returns with its formula</strong> and its source record ids.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>visualiser</code><span class="tag">shared service</span></p>
+          <p>Rendering only — self-contained HTML, markdown and CSV that open with no network. Computes nothing. If it finds itself calculating, a number has escaped its provenance.</p>
+        </div>
+      </div>
+
+      <div class="roster-h">
+        <h3>Domain agents</h3>
+        <span>the life — each the sole writer of its own ledgers</span>
+      </div>
+      <div class="roster">
+        <div class="agent">
+          <p class="n"><code>identity</code><span class="tag">people</span></p>
+          <p>People, entities, and the relationship graph tying every person to every obligation, asset and benefit. <strong>Every other domain depends on it</strong> — it is what makes cross-domain analysis possible at all.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>finance</code><span class="tag">money</span></p>
+          <p>Accounts, transactions, recurring payments, budgets, net worth. Carries the flagship pipeline: statements to a categorised ledger to a dashboard to ranked findings.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>living</code><span class="tag">health &amp; home</span></p>
+          <p>The health stack, employer benefits, subscriptions, digital estate, household access, leases. Gap cover lives here rather than with insurance, because it pays what the scheme leaves.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>insurance</code><span class="tag">cover</span></p>
+          <p>Every policy — life, disability, income protection, dread disease, funeral, short-term, business. Needs versus cover, duplication against group benefits, and the cover map.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>investments</code><span class="tag">wealth</span></p>
+          <p>Retirement and discretionary — RAs, preservation and occupational funds, unit trusts, shares, offshore, TFSA, crypto. Allocation drift, Reg 28 compliance, fee drag.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>assets</code><span class="tag">balance sheet</span></p>
+          <p>Property, movables, rights, liabilities, valuations, FX. <strong>Suretyship is a required field, not an optional one</strong> — it is the item most often forgotten and most damaging at death.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>tax</code><span class="tag">SARS</span></p>
+          <p>The deadline calendar, medical credits, retirement-deduction headroom, TFSA limits, effective rate — for individuals, companies and trusts. It prepares, computes and flags. <strong>It never files.</strong></p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>estate</code><span class="tag">at death</span></p>
+          <p>Wills, beneficiaries, estate duty and CGT at death, executor and Master fees, the liquidity shortfall — and the beneficiary-versus-will conflict no single document can see.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>trusts</code><span class="tag">pack</span></p>
+          <p>The register, trustees and their independence, resolutions, beneficiaries by class and vesting, loan accounts and <strong>s7C exposure</strong>, distributions, the Master calendar.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>final-wishes</code><span class="tag">first days</span></p>
+          <p>Burial or cremation, plot, ashes, funeral contacts, and the thirty-day liquidity plan. Deliberately apart from estate: this is what a family reads first, and it must work without a lawyer.</p>
+        </div>
+        <div class="agent">
+          <p class="n"><code>readiness</code><span class="tag">the Life File</span></p>
+          <p>The Life File checklist as a live score — every required document present, absent or expired, and where the original is kept. Composes the Life File itself.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <p class="q">Exactly one agent may write any given ledger.</p>
+        <p>
+          Everyone else reads. It is not a convention — a <code>/selftest</code>
+          check parses the charters and <strong>fails the build if a ledger has
+          zero owners or two</strong>. And every agent ends its run by answering
+          the same three questions: what do I now know that I didn't, what is
+          still missing, and what would make me more useful next time. Those
+          answers become work items and memory candidates.
+        </p>
       </div>
     </div>
   </section>
