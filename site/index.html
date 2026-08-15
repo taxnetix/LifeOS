@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LifeOS — a personal life-management system, built as a Claude Code agentic system</title>
+<meta name="description" content="LifeOS is an open-source personal life-management system implemented entirely as a Claude Code agentic system. Local-first, provenance-first, South African by default — and an auxiliary use case for the IntelliTax platform.">
+<link rel="canonical" href="https://taxnetix.github.io/LifeOS/">
+<meta property="og:title" content="LifeOS — explore Life Intelligence">
+<meta property="og:description" content="A personal life-management system implemented entirely as a Claude Code agentic system. The repository is the product; the agent is the runtime.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://taxnetix.github.io/LifeOS/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232bbe98'/%3E%3Cstop offset='1' stop-color='%23205356'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M10 8v13h9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── IntelliTax brand tokens ───────────────────────────────────────────────
+   Sourced from libs/shared/themes/intellitax — brand cyan #2bbe98, the
+   dark-cyan gradient partner #205356, and the grey scale. Same palette, same
+   Poppins, same rounded-full gradient buttons and rounded-3xl cards, so this
+   reads as part of the IntelliTax family rather than a lookalike.          */
+:root {
+  --brand-500:#2bbe98; --brand-600:#239d7f; --brand-700:#1d7b67;
+  --brand-deep:#205356; --brand-300:#5de5cc;
+  --brand-gradient:linear-gradient(142.58deg,#2bbe98 0%,#205356 100%);
+  --accent:#6d6e71; --surface:#b5b4b5; --brand-text:#3f4042;
+
+  /* Spartan neutral tokens, copied verbatim from
+     libs/ui/styles/src/spartan-theme.css so the page sits on exactly the same
+     surfaces as intellitax.co.za. The palette is NEUTRAL — tinting it teal
+     looks close in isolation and wrong beside the real site. */
+  --bg:oklch(1 0 0);
+  --fg:oklch(0.145 0 0);
+  --card:oklch(1 0 0);
+  --card-2:oklch(0.97 0 0);
+  --muted:oklch(0.52 0 0);
+  --border:oklch(0.922 0 0);
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+  --logo:url('assets/intellitax-logo.svg');
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:oklch(0.145 0 0);
+    --fg:oklch(0.985 0 0);
+    --card:oklch(0.205 0 0);
+    --card-2:oklch(0.205 0 0);
+    --muted:oklch(0.708 0 0);
+    --border:oklch(1 0 0 / 10%);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+    --logo:url('assets/intellitax-logo-dark.svg');
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(8px);
+  background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--border)}
+.nav{display:flex;align-items:center;gap:28px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.3px;
+  text-decoration:none;font-size:18px}
+.mark{width:30px;height:30px;border-radius:9px;background:var(--brand-gradient);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;flex:none}
+.nav nav{display:none;gap:26px;margin-left:auto;font-size:14.5px;font-weight:500}
+.nav nav a{color:var(--muted);text-decoration:none;transition:color .15s}
+.nav nav a:hover{color:var(--brand-500)}
+.nav .cta{margin-left:auto}
+@media(min-width:900px){.nav nav{display:flex}.nav .cta{margin-left:0}}
+
+/* ── buttons ────────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;
+  padding:13px 28px;font-weight:600;font-size:15px;text-decoration:none;
+  transition:all .18s;white-space:nowrap;border:1px solid transparent}
+.btn-primary{background:var(--brand-gradient);color:#fff;font-weight:700;box-shadow:var(--shadow)}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(43,190,152,.3)}
+.btn-ghost{background:var(--card);border-color:var(--border);color:var(--fg)}
+.btn-ghost:hover{border-color:var(--brand-500);color:var(--brand-600)}
+.btn-sm{padding:9px 20px;font-size:14px}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+.masthead{position:relative;isolation:isolate;overflow:hidden;
+  padding:84px 0 72px;border-bottom:1px solid var(--border)}
+.field{position:absolute;inset:0;z-index:-2;opacity:.9}
+.field::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(60% 70% at 78% 32%,rgba(43,190,152,.22),transparent 70%),
+             radial-gradient(46% 58% at 96% 78%,rgba(32,83,86,.20),transparent 72%)}
+.dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle at 1px 1px,rgba(43,190,152,.5) 1px,transparent 0);
+  background-size:26px 26px;mask-image:linear-gradient(to bottom,transparent,black 38%,black 72%,transparent);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,black 38%,black 72%,transparent);opacity:.5}
+.veil{position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(to right,var(--bg),color-mix(in srgb,var(--bg) 70%,transparent) 52%,transparent)}
+.lockup{display:flex;align-items:center;gap:14px;margin:0 0 26px}
+.lockup-mark{width:52px;height:52px;border-radius:15px;background:var(--brand-gradient);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:27px;flex:none;
+  box-shadow:0 4px 14px rgba(43,190,152,.28);letter-spacing:-1px}
+.lockup-word{font-size:38px;font-weight:700;letter-spacing:-1.6px;line-height:1;
+  background:var(--brand-gradient);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent}
+.masthead .grid{display:grid;gap:56px;align-items:center}
+@media(min-width:1000px){.masthead .grid{grid-template-columns:7fr 5fr;gap:64px}}
+h1{font-size:clamp(38px,5.6vw,60px);line-height:1.08;letter-spacing:-1.6px;
+  font-weight:700;margin:0;max-width:12ch}
+h1 span{display:block}
+.subtitle{font-size:clamp(19px,2.3vw,25px);line-height:1.3;font-weight:600;
+  color:var(--brand-500);margin:14px 0 0;letter-spacing:-.4px}
+.subtitle span{display:block}
+.catchline{font-size:17.5px;color:var(--muted);margin:24px 0 0;max-width:34rem}
+.actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
+.included{background:var(--card);border:1px solid var(--border);border-radius:24px;
+  padding:32px;box-shadow:var(--shadow)}
+.included h2{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;
+  color:var(--muted);margin:0 0 18px;font-weight:600}
+.included ul{list-style:none;margin:0;padding:0;display:grid;gap:13px}
+.included li{display:flex;gap:11px;align-items:flex-start;font-size:15px;font-weight:500}
+.tick{width:19px;height:19px;border-radius:6px;background:var(--brand-gradient);flex:none;
+  display:grid;place-items:center;margin-top:2px}
+.tick svg{width:11px;height:11px;stroke:#fff;stroke-width:3.2;fill:none}
+
+/* ── sections ───────────────────────────────────────────────────────────── */
+section{padding:76px 0}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--brand-500);margin:0 0 12px}
+h2.sec{font-size:clamp(27px,3.4vw,38px);line-height:1.16;letter-spacing:-1px;
+  font-weight:700;margin:0;max-width:22ch}
+.lead{font-size:17px;color:var(--muted);margin:16px 0 0;max-width:62ch}
+.cards{display:grid;gap:20px;margin-top:44px;grid-template-columns:1fr}
+@media(min-width:700px){.cards{grid-template-columns:1fr 1fr}}
+@media(min-width:1000px){.cards.three{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;
+  padding:28px;box-shadow:var(--shadow);transition:border-color .18s,transform .18s}
+.card:hover{border-color:color-mix(in srgb,var(--brand-500) 45%,var(--border));transform:translateY(-2px)}
+.card .ico{width:42px;height:42px;border-radius:12px;background:var(--brand-gradient);
+  display:grid;place-items:center;margin-bottom:18px}
+.card .ico svg{width:20px;height:20px;stroke:#fff;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:17.5px;margin:0 0 9px;font-weight:600;letter-spacing:-.3px}
+.card p{margin:0;font-size:14.8px;color:var(--muted);line-height:1.62}
+.logo-lockup{display:flex;flex-direction:column;align-items:center;gap:14px;
+  margin-top:56px;padding:34px;border-top:1px solid var(--border);text-decoration:none}
+.logo-caption{font-size:11.5px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--muted);font-weight:600}
+/* The real mark from libs/intellitax/assets, swapped by colour scheme via the
+   --logo custom property — the dark variant carries its own light wordmark. */
+.itax-logo{display:block;width:min(300px,72vw);height:56px;
+  background-image:var(--logo);background-repeat:no-repeat;
+  background-position:center;background-size:contain;transition:opacity .18s}
+.logo-lockup:hover .itax-logo{opacity:.82}
+.alt{background:var(--card-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+
+/* ── finding callout ────────────────────────────────────────────────────── */
+.finding{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--brand-500);
+  border-radius:0 18px 18px 0;padding:26px 30px;margin-top:22px;box-shadow:var(--shadow)}
+.finding p{margin:0;font-size:15.5px;color:var(--muted)}
+.finding strong{color:var(--fg);font-weight:600}
+.finding .q{font-size:19px;color:var(--fg);font-weight:600;letter-spacing:-.3px;
+  margin:0 0 10px;line-height:1.4}
+
+/* ── chips ──────────────────────────────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:30px}
+.chip{font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:999px;
+  background:color-mix(in srgb,var(--brand-500) 11%,transparent);
+  color:var(--brand-600);border:1px solid color-mix(in srgb,var(--brand-500) 26%,transparent)}
+@media (prefers-color-scheme: dark){.chip{color:var(--brand-300)}}
+
+/* ── stats ──────────────────────────────────────────────────────────────── */
+.stats{display:grid;gap:18px;grid-template-columns:repeat(2,1fr);margin-top:44px}
+@media(min-width:820px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:26px;text-align:center;box-shadow:var(--shadow)}
+.stat .n{font-size:32px;font-weight:700;letter-spacing:-1.2px;
+  background:var(--brand-gradient);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent}
+.stat .l{font-size:12.5px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1.1px;font-weight:600;margin-top:5px}
+
+/* ── closing cta ────────────────────────────────────────────────────────── */
+.closing{background:var(--brand-gradient);color:#fff;border-radius:30px;
+  padding:64px 40px;text-align:center;margin:76px 0}
+.closing h2{font-size:clamp(26px,3.4vw,38px);margin:0;letter-spacing:-1px;
+  font-weight:700;line-height:1.16}
+.closing p{margin:18px auto 0;max-width:56ch;font-size:17px;opacity:.94}
+.closing .actions{justify-content:center;margin-top:34px}
+.closing .btn-primary{background:#fff;color:var(--brand-deep)}
+.closing .btn-primary:hover{filter:none;background:#f2fbf9}
+.closing .btn-ghost{background:transparent;border-color:rgba(255,255,255,.45);color:#fff}
+.closing .btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.1);color:#fff}
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+footer{border-top:1px solid var(--border);padding:56px 0 44px;font-size:14.5px}
+.fgrid{display:grid;gap:36px;grid-template-columns:1fr}
+@media(min-width:760px){.fgrid{grid-template-columns:2fr 1fr 1fr}}
+footer h4{font-size:12px;text-transform:uppercase;letter-spacing:1.3px;
+  color:var(--muted);margin:0 0 14px;font-weight:600}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+footer a{color:var(--muted);text-decoration:none;transition:color .15s}
+footer a:hover{color:var(--brand-500)}
+.tagline{color:var(--muted);margin:14px 0 0;max-width:42ch;font-size:14.5px}
+.legal{margin-top:40px;padding-top:24px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;
+  align-items:center;justify-content:space-between}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;
+  background:color-mix(in srgb,var(--brand-500) 10%,transparent);
+  padding:2px 7px;border-radius:6px;color:var(--brand-600)}
+@media (prefers-color-scheme: dark){code{color:var(--brand-300)}}
+pre{background:var(--card-2);border:1px solid var(--border);border-radius:16px;
+  padding:22px 24px;overflow-x:auto;font-size:14px;line-height:1.7;margin:24px 0 0}
+pre code{background:none;padding:0;color:var(--fg)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <span class="mark">L</span>
+      <span>LifeOS</span>
+    </a>
+    <nav>
+      <a href="#what">What it is</a>
+      <a href="#life-file">The Life File</a>
+      <a href="#findings">What it finds</a>
+      <a href="#intellitax">IntelliTax</a>
+      <a href="#open">Open source</a>
+    </nav>
+    <a class="btn btn-primary btn-sm cta" href="https://github.com/taxnetix/LifeOS">View on GitHub</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ── masthead ─────────────────────────────────────────────────────── -->
+  <div class="masthead">
+    <div class="field" aria-hidden="true"><div class="dots"></div></div>
+    <div class="veil" aria-hidden="true"></div>
+    <div class="wrap grid">
+      <div>
+        <div class="lockup">
+          <span class="lockup-mark" aria-hidden="true">L</span>
+          <span class="lockup-word">LifeOS</span>
+        </div>
+        <h1><span>Explore</span><span>Life Intelligence</span></h1>
+        <p class="subtitle"><span>for individuals and families</span><span>in South Africa</span></p>
+        <p class="catchline">
+          An agentic-first system that documents, understands and optimises a
+          whole life — personal and business — as one connected graph.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/taxnetix/LifeOS">Get the repository</a>
+          <a class="btn btn-ghost" href="#life-file">See what it produces →</a>
+        </div>
+      </div>
+      <div class="included">
+        <h2>What's included</h2>
+        <ul>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>17 domain agents, one contract</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Document ingestion with provenance</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Bank statements to a categorised ledger</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Consolidated health &amp; risk cover map</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>SA tax deadlines and estate modelling</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>Trust administration pack</li>
+          <li><span class="tick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>The Life File, for your family</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── what it is ───────────────────────────────────────────────────── -->
+  <section id="what">
+    <div class="wrap">
+      <p class="eyebrow">What it is</p>
+      <h2 class="sec">Not an app. A repository that runs itself.</h2>
+      <p class="lead">
+        LifeOS has no server, no database and no front end. The repository is the
+        product, the agent is the runtime, and plain files on disk are the state —
+        readable in ten years, by someone who is not you, on a laptop with no
+        internet. You drop a document in a folder; everything else is the
+        system's job.
+      </p>
+
+      <div class="cards three">
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <h3>It runs on a loop</h3>
+          <p>Change detection is a script, not a reasoning step, so an idle heartbeat costs almost nothing. It notices an elapsed cadence, an expiring policy or a stale rulebook — not just a new file.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div>
+          <h3>Every number traces to a page</h3>
+          <p>Each record carries its source document hash, exact locator, extraction method and confidence. Below the floor, a figure becomes a question instead of an entry.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.4 9.4-8 10-4.6-.6-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3>Nothing personal leaves the machine</h3>
+          <p>A hook blocks any outbound call carrying an ID number, an account number or a name from your profile. It is a mechanism, not a policy — so it holds even when an agent is wrong.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3>Unknown is a real answer</h3>
+          <p>There is a gaps register. No placeholders, no plausible guesses, and no zero standing in for "we didn't look".</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+          <h3>It maintains itself</h3>
+          <p>Agents file issues about the <em>system</em> — a bank changed its statement layout, a tax table is past its refresh interval — and never about your life. The same hook enforces that line.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 1-4.5 4.3L18 20l-6-3.2L6 20l1.5-6.7L3 9l6-1z"/></svg></div>
+          <h3>It can grow itself</h3>
+          <p>One command scaffolds a new domain from the charter template, and the next heartbeat picks it up with zero changes to the orchestrator. Proven, not asserted.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">274</div><div class="l">tests passing</div></div>
+        <div class="stat"><div class="n">17</div><div class="l">domain agents</div></div>
+        <div class="stat"><div class="n">42</div><div class="l">JSON schemas</div></div>
+        <div class="stat"><div class="n">176</div><div class="l">life-file leaves</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── the life file ────────────────────────────────────────────────── -->
+  <section id="life-file" class="alt">
+    <div class="wrap">
+      <p class="eyebrow">The Life File</p>
+      <h2 class="sec">The document you hand your family</h2>
+      <p class="lead">
+        Everything they need on the worst day, in three audience tiers. No
+        passwords, PINs or safe codes at any tier — LifeOS prints the pointer,
+        never the secret.
+      </p>
+
+      <div class="cards three">
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>First 48 Hours</h3>
+          <p>Meant to be findable. Who to call, funeral wishes, where the will is, and the cash reachable in the first thirty days. <strong>No identifiers at all.</strong></p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div>
+          <h3>Executor Pack</h3>
+          <p>Policies to claim, accounts, assets, debts, trusts and the digital estate — with every identifier masked to its last four digits.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <h3>Sealed Annexure</h3>
+          <p>Full identifiers, for the executor alone. Must be asked for explicitly, watermarked, and every generation is written to the audit log.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <p class="q">Its headline section is “What my family will <em>not</em> find.”</p>
+        <p>
+          The unsigned will. The missing title deed. The suretyship nobody knew
+          about. A Life File that showed only what is known would be a
+          comfortable lie — <strong>the gaps are the reason to read it while
+          there is still time to act.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── what it finds ────────────────────────────────────────────────── -->
+  <section id="findings">
+    <div class="wrap">
+      <p class="eyebrow">What it finds</p>
+      <h2 class="sec">Things no single document says</h2>
+      <p class="lead">
+        Each of these needed two or more documents read together. Every figure
+        below is from the project's fully fictional demo vault.
+      </p>
+
+      <div class="finding">
+        <p class="q">Solvent, with R5 983 974 to spare — and the family can reach R30 000 in the first thirty days.</p>
+        <p>
+          <strong>0.7 months of household spending.</strong> Bank accounts freeze
+          at death, including joint accounts. Group life takes weeks. Anything
+          falling into the estate takes months. An estate can be comfortably
+          solvent and still leave a family unable to buy groceries.
+        </p>
+      </div>
+
+      <div class="finding">
+        <p class="q">Income protection is over-insured by R55 000 a month.</p>
+        <p>
+          Employer cover and a personal policy together exceed the aggregate
+          ceiling SA insurers underwrite to, so up to <strong>R15 408 a year of
+          premium may be buying nothing</strong> — and employer cover ends with
+          the job, so the answer is usually to reduce the personal policy, not
+          drop it.
+        </p>
+      </div>
+
+      <div class="finding">
+        <p class="q">R1.8m is nominated away from the will's heir.</p>
+        <p>
+          A beneficiary nomination <strong>overrides the will</strong> for that
+          asset, and neither document mentions the other. Often deliberate — but
+          it should be a decision, not a surprise.
+        </p>
+      </div>
+
+      <div class="finding">
+        <p class="q">An interest-free loan to the family trust costs R53 500 a year in donations tax.</p>
+        <p>
+          Section 7C treats the interest forgone as a donation, <strong>payable
+          by the lender personally, in cash, every year the loan stays
+          interest-free.</strong> Nothing on the loan account says so.
+        </p>
+      </div>
+
+      <div class="chips">
+        <span class="chip">Cross-account duplicate subscriptions</span>
+        <span class="chip">Escalation creep</span>
+        <span class="chip">Fee leakage</span>
+        <span class="chip">Ceded cover</span>
+        <span class="chip">Employer-only cover</span>
+        <span class="chip">Day-to-day medical holes</span>
+        <span class="chip">Fee drag over 30 years</span>
+        <span class="chip">Independent trustee absent</span>
+        <span class="chip">Unrecorded cancellation routes</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── intellitax ───────────────────────────────────────────────────── -->
+  <section id="intellitax" class="alt">
+    <div class="wrap">
+      <p class="eyebrow">Powered by the platform</p>
+      <h2 class="sec">Where LifeOS stops, IntelliTax starts</h2>
+      <p class="lead">
+        LifeOS deliberately never files. It reads documents, keeps ledgers,
+        computes headroom and tracks deadlines — then says <em>this needs a
+        registered practitioner</em>. <a href="https://www.intellitax.co.za" style="color:var(--brand-500);font-weight:600;text-decoration:none">IntelliTax</a>
+        is where that boundary can be crossed deliberately: South Africa's
+        intelligent tax compliance platform, for SARS directives, tax
+        certificates, Recognition of Transfer, employer reconciliation and bulk
+        volumes.
+      </p>
+
+      <div class="cards three">
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg></div>
+          <h3>GraphQL API</h3>
+          <p>One typed endpoint over the whole platform — taxpayers, funds, employers, directives, certificates, billing — for deterministic calls from code.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6M6 8h12v5a6 6 0 01-12 0zM12 19v3"/></svg></div>
+          <h3>MCP server</h3>
+          <p>Every GraphQL query and mutation exposed as an MCP tool, so an agent stack acquires tax capability as configuration rather than as a client library.</p>
+        </div>
+        <div class="card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 12h6"/></svg></div>
+          <h3>Agent-to-agent</h3>
+          <p>IntelliTax agents addressable by other agents, so tax administration becomes a step inside a wider automation rather than a destination someone navigates to.</p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <p class="q">This is a documented integration path, not a shipped feature.</p>
+        <p>
+          LifeOS carries an <code>intellitax</code> skill describing the seam and
+          what it would require — an account, an active subscription, billing, a
+          service account and an API key. <strong>No IntelliTax client ships with
+          LifeOS.</strong> Filing would remain human-gated, and an API key would
+          live in your environment, never in the vault.
+        </p>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="https://www.intellitax.co.za">Explore IntelliTax</a>
+        <a class="btn btn-ghost" href="https://docs.intellitax.co.za">Read the docs →</a>
+      </div>
+
+      <a class="logo-lockup" href="https://www.intellitax.co.za"
+         aria-label="IntelliTax — visit intellitax.co.za">
+        <span class="logo-caption">A Taxnetix platform</span>
+        <span class="itax-logo" role="img" aria-label="IntelliTax"></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── open source ──────────────────────────────────────────────────── -->
+  <section id="open">
+    <div class="wrap">
+      <p class="eyebrow">Open source</p>
+      <h2 class="sec">Clone it, point it at a folder, drop in a document</h2>
+      <p class="lead">
+        MIT licensed. The system repository holds zero personal data — your vault
+        is a separate, git-ignored directory, and a pre-commit hook refuses to
+        let the two meet.
+      </p>
+
+<pre><code>git clone https://github.com/taxnetix/LifeOS.git &amp;&amp; cd LifeOS
+python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt
+npm install &amp;&amp; bash tools/scripts/install-hooks.sh
+
+# then, in Claude Code
+/lifeos-init      # interview, scaffold your vault, pick domains and packs
+/heartbeat        # one pass of the loop — idempotent, safe hourly, forever</code></pre>
+
+      <div class="chips">
+        <span class="chip">Claude Code native</span>
+        <span class="chip">Local-first</span>
+        <span class="chip">MIT licensed</span>
+        <span class="chip">South African by default</span>
+        <span class="chip">POPIA-aware</span>
+        <span class="chip">No server, no database</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="closing">
+      <h2>See the intelligent way to stay on top of it</h2>
+      <p>
+        Clone the repository and run your first heartbeat, or explore the
+        platform that handles the filing.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://github.com/taxnetix/LifeOS">Get LifeOS</a>
+        <a class="btn btn-ghost" href="https://www.intellitax.co.za">Explore IntelliTax</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div>
+        <a class="brand" href="#top"><span class="mark">L</span><span>LifeOS</span></a>
+        <p class="tagline">
+          A personal life-management system implemented entirely as a Claude Code
+          agentic system. An open-source auxiliary project alongside IntelliTax.
+        </p>
+      </div>
+      <div>
+        <h4>LifeOS</h4>
+        <ul>
+          <li><a href="https://github.com/taxnetix/LifeOS">Repository</a></li>
+          <li><a href="https://github.com/taxnetix/LifeOS/blob/main/docs/README.md">Documentation</a></li>
+          <li><a href="https://github.com/taxnetix/LifeOS/blob/main/docs/adr/README.md">Design decisions</a></li>
+          <li><a href="https://github.com/taxnetix/LifeOS/blob/main/SECURITY.md">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>IntelliTax</h4>
+        <ul>
+          <li><a href="https://www.intellitax.co.za">Website</a></li>
+          <li><a href="https://docs.intellitax.co.za">Documentation</a></li>
+          <li><a href="https://developer.intellitax.co.za">Developer portal</a></li>
+          <li><a href="https://support.intellitax.co.za">Support</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Taxnetix. LifeOS is MIT licensed.</span>
+      <span>LifeOS is not financial, tax or legal advice. Every figure shown here is from a fictional demo vault.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

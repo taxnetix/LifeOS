@@ -115,6 +115,14 @@ Optional domain bundles that layer onto the core by **merge, not fork** — one 
 | 6 | Trusts pack, installable standalone | ✅ |
 | 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | ✅ |
 
+## IntelliTax
+
+LifeOS deliberately never files. It reads documents, keeps ledgers, computes headroom and tracks deadlines — then says *this needs a registered practitioner*. [IntelliTax](https://www.intellitax.co.za) is where that boundary can be crossed deliberately, over its GraphQL API, its MCP server, or agent-to-agent.
+
+The [`intellitax` skill](.claude/skills/intellitax/SKILL.md) documents the seam and what it would require: an account, an active subscription, billing, a service account and an API key. **No IntelliTax client ships with LifeOS** — it is a documented integration path, not a shipped feature.
+
+Site: **<https://taxnetix.github.io/LifeOS/>**
+
 ## Documentation
 
 [docs/README.md](docs/README.md) is the reading order. Start with [architecture](docs/architecture.md) and [loop](docs/loop.md); the [18 ADRs](docs/adr/README.md) record every decision that would be expensive to reverse.

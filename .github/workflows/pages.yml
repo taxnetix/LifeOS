@@ -1,0 +1,38 @@
+# Publish the LifeOS marketing site to GitHub Pages.
+#
+# The site lives in site/ rather than docs/ deliberately: docs/ holds the
+# engineering documentation — architecture, ADRs, the coverage map — and Jekyll
+# would otherwise try to render 27 markdown design documents as web pages.
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # .nojekyll: the site is plain HTML and needs no Jekyll pass.
+      - run: touch site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
