@@ -1,0 +1,46 @@
+# Section 7C — interest-free and low-interest loans to trusts.
+#
+# WRITTEN FROM MEMORY, NOT VERIFIED AGAINST SARS. Every figure computed from
+# this carries requires_verification. See .claude/rules/za/README.md.
+schema: rule/1
+rule: s7c
+jurisdiction: za
+tax_year: 2026
+as_at: "2025-02-19"
+source: https://www.sars.gov.za/legal-counsel/interpretation-rulings/
+verified: false
+refresh_interval: P1Y
+
+description: >
+  Where a natural person (or a company at that person's instance) makes a loan,
+  advance or credit to a trust connected to them, and it bears interest below
+  the official rate, the SHORTFALL is treated as a donation made annually by
+  the lender on the last day of the tax year.
+
+# Official rate of interest = repo rate + 1 percentage point.
+# THIS MOVES WITH THE REPO RATE and is the value most likely to be stale here.
+official_rate_pct: 8.75
+repo_rate_pct: 7.75
+rate_note: >
+  The official rate is the repo rate plus one percentage point, so it changes
+  whenever the Reserve Bank moves. Verify it for the year being computed — using
+  a stale rate misstates the deemed donation directly and proportionally.
+
+donations_tax_pct: 20
+annual_donations_exemption: 100000
+exemption_note: >
+  The R100 000 annual donations tax exemption is available to a natural person
+  and is shared across ALL donations that person makes in the year, not just the
+  s7C deemed one. If they have donated elsewhere, less of it is available here.
+
+exclusions:
+  - Loans to a special trust created solely for a person with a disability.
+  - Loans used to fund the lender's primary residence held by the trust.
+  - Loans that are subject to a vesting right held by the lender.
+  - Loans where the trust is a public benefit organisation.
+  - Amounts already treated as a donation under another provision.
+
+no_deduction_note: >
+  The deemed donation cannot be offset by a loss and carries no deduction. It is
+  a pure cost, payable in cash by the LENDER — not by the trust — and it repeats
+  every year the loan stays outstanding at a below-market rate.

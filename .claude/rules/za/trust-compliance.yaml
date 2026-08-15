@@ -1,0 +1,90 @@
+# Trust administration obligations — Master of the High Court and SARS.
+#
+# Structural rather than rate-based, so more stable than the tax tables, but
+# still dated. NOT VERIFIED.
+schema: rule/1
+rule: trust-compliance
+jurisdiction: za
+as_at: "2025-02-19"
+source: https://www.justice.gov.za/master/trust.html
+verified: false
+refresh_interval: P1Y
+
+independent_trustee:
+  required_by: Master's Directive (inter vivos discretionary trusts)
+  applies_to: [inter_vivos_discretionary]
+  description: >
+    The Master generally requires at least one trustee who is independent of the
+    founder and the beneficiaries — someone with no family relationship and no
+    beneficial interest, who understands fiduciary duty.
+  why_it_matters: >
+    Without an independent trustee, a trust whose founder is also a trustee and
+    a beneficiary is materially easier to attack as the founder's alter ego. If
+    that succeeds, the assets are treated as the founder's own — which defeats
+    the purpose of the trust in a divorce, an insolvency, or an estate.
+
+obligations:
+  - kind: afs
+    label: Annual financial statements
+    months_after_year_end: 6
+    lead_days: 60
+    note: >
+      Not filed with the Master as a matter of course, but the Master may call
+      for them, and SARS requires the figures for the IT12TR.
+  - kind: it12tr
+    label: Trust income tax return (IT12TR)
+    month: 10
+    day: 20
+    lead_days: 90
+  - kind: bo_register
+    label: Beneficial ownership register (Master)
+    months_after_year_end: 12
+    lead_days: 90
+    note: >
+      Trustees must keep a record of beneficial owners and lodge it with the
+      Master. Introduced by the General Laws Amendment Act; non-compliance
+      carries penalties for trustees personally.
+  - kind: irp6_1
+    label: Provisional tax IRP6 period 1
+    month: 8
+    day: 31
+    lead_days: 30
+  - kind: irp6_2
+    label: Provisional tax IRP6 period 2
+    month: 2
+    day: 28
+    lead_days: 30
+    leap_aware: true
+
+resolutions:
+  cadence_months: 12
+  description: >
+    Trustees must act jointly and record their decisions. A distribution made
+    without a resolution authorising it before year end is the most common
+    finding against a trust.
+  why_it_matters: >
+    The conduit principle depends on income being VESTED in a beneficiary during
+    the year of assessment. Without a dated resolution, SARS may treat the income
+    as retained in the trust and tax it at the flat trust rate — usually much
+    higher than the beneficiary's rate.
+
+taxation:
+  flat_rate_pct: 45
+  cgt_inclusion_pct: 80
+  conduit_principle: >
+    Income vested in a beneficiary in the same year of assessment is taxed in
+    THAT BENEFICIARY's hands, retaining its nature — interest stays interest,
+    a capital gain stays a capital gain. Income retained in the trust is taxed
+    in the trust at the flat rate.
+  attribution_s7: >
+    Where income arises from a donation, settlement or other disposition made by
+    a person, it may be attributed back to that DONOR rather than the recipient.
+    A founder who donated the trust's capital may find its income taxed in their
+    own hands, whatever the resolution says. This interacts with s7C and needs a
+    practitioner.
+
+fica:
+  description: >
+    A trust may be an accountable institution under FICA depending on what it
+    does — trusts that invest on behalf of others are commonly caught.
+  note: Being an accountable institution brings registration and reporting duties.

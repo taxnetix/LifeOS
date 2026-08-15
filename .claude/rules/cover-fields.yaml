@@ -177,3 +177,67 @@ types:
       residuary_heir:   {pattern: '(?i:i bequeath my entire estate to my [a-z]+,\s*)([A-Z]\s?[A-Za-z ]+?)\s*[.,]'}
       substitute_heir:  {pattern: '(?i:devolve upon the)\s+([A-Z][A-Za-z ]+?)\s*\('}
       revokes_previous: {pattern: '(?i:(i revoke all previous wills))'}
+
+# >>> LIFEOS PACK: trusts >>>
+  trust_deed:
+    ledger: trusts
+    fields:
+      name:
+        pattern: ^(?i:trust name)\s+(\S.*?)\s*$
+      mt_number:
+        pattern: ^(?i:master's reference number)\s+(\S.*?)\s*$
+      type_text:
+        pattern: ^(?i:trust type)\s+(\S.*?)\s*$
+      founder_name:
+        pattern: ^(?i:founder)\s+(\S.*?)\s*$
+      signed_on:
+        pattern: ^(?i:deed signed on)\s+(\d{1,2}\s+\w+\s+\d{4})
+        type: date
+      year_end:
+        pattern: ^(?i:financial year end)\s+(\S.*?)\s*$
+      min_trustees:
+        pattern: ^(?i:minimum number of trustees)\s+(\S.*?)\s*$
+      deed_requires_independent:
+        pattern: ^(?i:independent trustee required by deed)\s+(\S.*?)\s*$
+      quorum:
+        pattern: ^(?i:quorum for resolutions)\s+(\S.*?)\s*$
+  letters_of_authority:
+    ledger: trusts
+    fields:
+      name:
+        pattern: ^(?i:trust name)\s+(\S.*?)\s*$
+      mt_number:
+        pattern: ^(?i:master's reference number)\s+(\S.*?)\s*$
+      type_text:
+        pattern: ^(?i:trust type)\s+(\S.*?)\s*$
+      founder_name:
+        pattern: ^(?i:founder)\s+(\S.*?)\s*$
+      loa_issued_on:
+        pattern: ^(?i:letters issued on)\s+(\d{1,2}\s+\w+\s+\d{4})
+        type: date
+      year_end:
+        pattern: ^(?i:financial year end)\s+(\S.*?)\s*$
+    resolves:
+      trustee:
+        pattern: ^([A-Z]\s?[A-Za-z ]+?)\s+(Trustee|Independent 
+          trustee|Chair|Alternate)\s+(\d{1,2}\s+\w+\s+\d{4})\s*$
+  trust_resolution:
+    ledger: trustees
+    fields:
+      mt_number:
+        pattern: ^(?i:master's reference number)\s+(\S.*?)\s*$
+      resolution_no:
+        pattern: ^(?i:resolution number)\s+(\S.*?)\s*$
+      meeting_on:
+        pattern: ^(?i:meeting held on)\s+(\d{1,2}\s+\w+\s+\d{4})
+        type: date
+      present:
+        pattern: ^(?i:trustees present)\s+(\S.*?)\s*$
+    resolves:
+      distribution:
+        pattern: ^(?i:distribution to)\s+([A-Z]\s?[A-Za-z ]+?)\s+(R\s?[\d  
+          ,.]+\d)\s+([a-z ]+?),\s*(?i:vested)\s+(\d{1,2}\s+\w+\s+\d{4})
+      loan:
+        pattern: ^(?i:loan account acknowledged)\s+([A-Z]\s?[A-Za-z 
+          ]+?),\s*(R\s?[\d  ,.]+\d),\s*(interest free|[\d.]+%)
+# <<< LIFEOS PACK: trusts <<<

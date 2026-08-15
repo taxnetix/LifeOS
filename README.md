@@ -6,7 +6,7 @@ It ingests real documents — bank statements, policy schedules, medical aid pla
 
 Built for South African tax, estate and trust law. Personal and business treated as one interconnected graph.
 
-> **Status: Phase 5 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. The trusts pack lands next. See [the roadmap](#roadmap).
+> **Status: Phase 6 of 7.** Documents flow in with provenance; readiness is scored; the Life File renders to PDF; statements become a categorised ledger, a dashboard and ranked findings; and the health-and-risk cover map reads the medical scheme, gap policy, employer benefits and personal policies together to name the overlaps and the holes. Tax deadlines run off dated SARS rulebooks that report their own staleness, and the estate model answers the question families actually hit: not whether the estate is solvent, but whether anyone can reach cash in the first thirty days. The trusts pack installs by merge rather than fork, so a colleague gets trust administration and none of anyone else's data. Intelligence and closure land next. See [the roadmap](#roadmap).
 
 ## The idea in one paragraph
 
@@ -55,6 +55,8 @@ vault/       VAULT    your real life. Git-ignored. Never leaves your machine.
 | `/review <domain>` | Deep review of one domain |
 | `/deadlines` | Everything due, with lead times and why it applies to you |
 | `/ask` · `/what-if` · `/life-event` | Cross-domain Q&A with citations · scenarios · cascades |
+| `/trust-review` | s7C exposure, trustee independence, compliance, separation |
+| `/install-pack` | List, install or remove an optional domain pack |
 | `/issues` | The system's own backlog on GitHub |
 | `/consolidate` · `/audit` · `/add-domain` · `/forget` | Memory ritual · provenance proof · self-extension · POPIA erasure |
 
@@ -90,6 +92,16 @@ The artefact everything points at: **a document you can hand to your family**, i
 
 No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, never the secret. Its headline section is **"What your family will NOT find"**: the unsigned will, the missing title deed, the suretyship nobody knew about. A Life File showing only what is known would be a comfortable lie. [ADR-0018](docs/adr/0018-life-file-document.md).
 
+## Packs
+
+Optional domain bundles that layer onto the core by **merge, not fork** — one codebase, many configurations, so a core fix reaches every installation.
+
+```
+/install-pack install trusts
+```
+
+`trusts` ships first: the trust register, trustees and their independence, resolutions, beneficiaries by class and vesting, loan accounts and **s7C exposure**, distributions and their tax attribution, and the Master and SARS compliance calendar. A pack installs *capability, never data* — your colleague gets the machinery and none of your records. [ADR-0019](docs/adr/0019-packs-merge-not-fork.md).
+
 ## Roadmap
 
 | Phase | | Status |
@@ -100,8 +112,8 @@ No passwords, PINs or safe codes at any tier — LifeOS prints the *pointer*, ne
 | 3 | Financial flagship — statements → dashboard → optimisation | ✅ |
 | 4 | Cover and wealth — insurance, medical, investments, gap analysis | ✅ |
 | 5 | Tax and estate — SARS rulebooks, duty and liquidity modelling | ✅ |
-| 6 | Trusts pack, installable standalone | next |
-| 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | |
+| 6 | Trusts pack, installable standalone | ✅ |
+| 7 | `/ask`, `/what-if`, cascades, memory ritual, self-extension | next |
 
 ## Documentation
 

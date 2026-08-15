@@ -181,7 +181,9 @@ def build(*, dry_run: bool = False) -> dict:
 
     records: dict[str, list[dict]] = {"policies": [], "medical-aid": [],
                                       "employee-benefits": [], "assets": [],
-                                      "liabilities": [], "valuations": [], "wills": []}
+                                      "liabilities": [], "valuations": [], "wills": [],
+                                      "trusts": [], "trustees": [], "distributions": [],
+                                      "loan-accounts": []}
 
     for doc in index:
         spec = rules["types"].get(doc.get("type"))
@@ -306,6 +308,182 @@ def build(*, dry_run: bool = False) -> dict:
                 rec["providers"] = [{"kind": "excludes", "name": ", ".join(excludes)}]
             records["medical-aid"].append(rec)
             entry["ref"] = ref
+
+        elif target == "trusts":
+            ref = f"tr_{_slug(values.get('name', 'trust'))}"
+            type_map = {
+                "inter vivos discretionary": "inter_vivos_discretionary",
+                "inter vivos vested": "inter_vivos_vested",
+                "testamentary": "testamentary",
+                "bewind": "bewind",
+                "special": "special",
+            }
+            ttype = "inter_vivos_discretionary"
+            for needle, mapped in type_map.items():
+                if needle in (values.get("type_text") or "").lower():
+                    ttype = mapped
+                    break
+            rec = {
+                **_envelope(rec_id=ledger.record_id(dh, loc, ref), schema="trusts/1",
+                            subject=subject, doc_hash=dh, locator=loc, confidence=conf,
+                            valid_from=values.get("signed_on") or values.get("loa_issued_on")
+                            or clock.today()),
+                "ref": ref, "name": values.get("name") or "unnamed trust", "type": ttype,
+            }
+            if "mt_number" in values:
+                rec["mt_number"] = values["mt_number"]
+            founder = _person_by_name(profile, values.get("founder_name"))
+            if founder:
+                rec["founder_ref"] = founder
+            # Year end drives every compliance date; "28 February" must become
+            # "02-28" or the whole calendar is a year out.
+            ye = values.get("year_end")
+            if ye:
+                import calendar as _cal
+                months = {m.lower(): i for i, m in enumerate(_cal.month_name) if m}
+                parts = ye.replace(",", " ").split()
+                if len(parts) == 2 and parts[1].lower() in months:
+                    rec["year_end"] = f"{months[parts[1].lower()]:02d}-{int(parts[0]):02d}"
+            if "signed_on" in values:
+                rec["deed"] = [{"kind": "deed", "signed_on": values["signed_on"],
+                                "doc_hash": dh}]
+            if "loa_issued_on" in values:
+                rec["loa"] = {"issued_on": values["loa_issued_on"], "doc_hash": dh}
+
+            # A trust is ONE thing evidenced by SEVERAL documents — the deed
+            # carries the beneficiaries and the quorum, the letters of authority
+            # carry the issue date and who may act. Keying on the document would
+            # mint a separate trust per document, and every count, calendar and
+            # s7C figure would then be doubled.
+            #
+            # Identity is the trust ref anchored to the lexicographically
+            # smallest evidencing document, so it is stable whatever order the
+            # documents arrive in; fields merge, and the deed's own record of a
+            # field wins over a later document's silence.
+            prior = next((r for r in records["trusts"] if r["ref"] == ref), None)
+            if prior is None:
+                records["trusts"].append(rec)
+            else:
+                anchor = min(prior["source"]["doc_hash"], dh)
+                merged = {**rec, **{k: v for k, v in prior.items() if k not in rec}}
+                for key in ("deed", "loa", "mt_number", "founder_ref", "year_end"):
+                    if key in prior and key not in rec:
+                        merged[key] = prior[key]
+                    elif key in rec and key in prior and key == "deed":
+                        merged[key] = prior[key] + rec[key]
+                merged["source"] = dict(prior["source"] if anchor ==
+                                        prior["source"]["doc_hash"] else rec["source"])
+                merged["id"] = ledger.record_id(anchor, loc, ref)
+                records["trusts"][records["trusts"].index(prior)] = merged
+            entry["ref"] = ref
+
+            for m in re.finditer(
+                ((spec.get("resolves") or {}).get("trustee") or {}).get("pattern", r"(?!x)x"),
+                text, re.M,
+            ):
+                tname, capacity, appointed = m.groups()
+                tref = f"tt_{_slug(ref)}_{_slug(tname)}"
+                records["trustees"].append({
+                    **_envelope(rec_id=ledger.record_id(dh, f"trustee={tname.strip()}", tref),
+                                schema="trustees/1", subject=subject, doc_hash=dh,
+                                locator=f"trustee={tname.strip()}", confidence=conf,
+                                valid_from=_coerce(appointed, "date") or clock.today()),
+                    "trust_ref": ref, "kind": "appointment",
+                    "name": tname.strip(),
+                    **({"person_ref": _person_by_name(profile, tname.strip())}
+                       if _person_by_name(profile, tname.strip()) else {}),
+                    "role": "independent" if "independent" in capacity.lower() else "trustee",
+                    "independent": "independent" in capacity.lower(),
+                    "appointed_on": _coerce(appointed, "date"),
+                    "doc_hash": dh,
+                })
+            entry["trustees"] = sum(1 for r in records["trustees"]
+                                    if r.get("trust_ref") == ref and r["kind"] == "appointment")
+
+        elif target == "trustees":
+            trust_ref = None
+            for tr in ledger.read("trusts"):
+                if values.get("mt_number") and tr.get("mt_number") == values["mt_number"]:
+                    trust_ref = tr["ref"]
+                    break
+            if trust_ref is None:
+                trust_ref = next((tr["ref"] for tr in records["trusts"]
+                                  if tr.get("mt_number") == values.get("mt_number")), None)
+            if trust_ref is None:
+                # A resolution that cannot be tied to a trust is a gap, never a
+                # guess: attaching it to the wrong trust is worse than not
+                # attaching it at all.
+                entry["error"] = (
+                    f"resolution references {values.get('mt_number')} but no trust with "
+                    "that Master's reference is on file"
+                )
+                if not dry_run:
+                    _gap("record.low_confidence", entry["error"], run.id, "trusts")
+                out["documents"].append(entry)
+                continue
+
+            res_ref = f"res_{_slug(trust_ref)}_{_slug(values.get('resolution_no', 'x'))}"
+            records["trustees"].append({
+                **_envelope(rec_id=ledger.record_id(dh, loc, res_ref), schema="trustees/1",
+                            subject=subject, doc_hash=dh, locator=loc, confidence=conf,
+                            valid_from=values.get("meeting_on") or clock.today()),
+                "trust_ref": trust_ref, "kind": "resolution",
+                "meeting_on": values.get("meeting_on"),
+                "subject": f"Resolution {values.get('resolution_no', '')}".strip(),
+                "doc_hash": dh,
+            })
+            entry["ref"] = res_ref
+
+            resolves = spec.get("resolves") or {}
+            nature_map = {"rental income": "income_rental", "interest income": "income_interest",
+                          "dividend": "dividend", "capital": "capital"}
+            if resolves.get("distribution"):
+                for m in re.finditer(resolves["distribution"]["pattern"], text, re.M):
+                    name, amt, nature, vested = m.groups()
+                    cents = money.parse(amt)
+                    if cents is None:
+                        continue
+                    ben = _person_by_name(profile, name.strip())
+                    dref = f"{res_ref}_{_slug(name)}"
+                    records["distributions"].append({
+                        **_envelope(rec_id=ledger.record_id(dh, f"dist={name.strip()}", dref),
+                                    schema="distributions/1", subject=subject, doc_hash=dh,
+                                    locator=f"dist={name.strip()}", confidence=conf,
+                                    valid_from=values.get("meeting_on") or clock.today()),
+                        "trust_ref": trust_ref,
+                        "beneficiary_ref": ben or "per_unknown",
+                        "tax_year": str(int(vested.split()[-1])),
+                        "amount": money.money(cents),
+                        "nature": nature_map.get(nature.strip().lower(), "income_interest"),
+                        # Vested during the year AND authorised by this resolution:
+                        # both are what the conduit principle needs.
+                        "conduit": True,
+                        "resolution_ref": res_ref,
+                        "doc_hash": dh,
+                    })
+            if resolves.get("loan"):
+                for m in re.finditer(resolves["loan"]["pattern"], text, re.M):
+                    name, amt, rate = m.groups()
+                    cents = money.parse(amt)
+                    if cents is None:
+                        continue
+                    lender = _person_by_name(profile, name.strip())
+                    lref = f"loan_{_slug(trust_ref)}_{_slug(name)}"
+                    records["loan-accounts"].append({
+                        **_envelope(rec_id=ledger.record_id(dh, f"loan={name.strip()}", lref),
+                                    schema="loan-accounts/1", subject=subject, doc_hash=dh,
+                                    locator=f"loan={name.strip()}", confidence=conf,
+                                    valid_from=values.get("meeting_on") or clock.today()),
+                        "trust_ref": trust_ref,
+                        "counterparty_ref": lender or "per_unknown",
+                        "direction": "owed_by_trust",
+                        "balance": money.money(cents),
+                        "balance_as_at": values.get("meeting_on") or clock.today(),
+                        "interest_rate_pct": 0.0 if "interest free" in rate.lower()
+                                             else float(rate.rstrip("%")),
+                        "s7c_applicable": True,
+                        "doc_hash": dh,
+                    })
 
         elif target == "wills":
             testator = _person_by_name(profile, values.get("testator")) or subject
@@ -467,7 +645,8 @@ def build(*, dry_run: bool = False) -> dict:
             name, recs,
             agent={"policies": "insurance", "assets": "assets",
                    "liabilities": "assets", "valuations": "assets",
-                   "wills": "estate"}.get(name, "living"),
+                   "wills": "estate", "trusts": "trusts", "trustees": "trusts",
+                   "distributions": "trusts", "loan-accounts": "trusts"}.get(name, "living"),
             run_id=run.id, dry_run=dry_run)
         for name, recs in records.items() if recs
     }

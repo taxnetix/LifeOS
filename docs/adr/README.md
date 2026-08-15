@@ -24,3 +24,4 @@ An ADR is never edited to change its decision — it is superseded by a new one 
 | [0016](0016-jurisdiction-as-config-axis.md) | Jurisdiction is a config axis | Accepted |
 | [0017](0017-github-for-system-work.md) | GitHub tracks the system, never your life | Accepted |
 | [0018](0018-life-file-document.md) | The Life File is a tiered document, not a data dump | Accepted |
+| [0019](0019-packs-merge-not-fork.md) | Packs are merged, not forked | Accepted |

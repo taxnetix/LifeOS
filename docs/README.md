@@ -1,6 +1,6 @@
 # LifeOS — Documentation
 
-**Phases 0–5 are complete.** Design, the spine, ingestion/readiness/Life File, the financial flagship, cover and wealth, and tax and estate are all on disk. Phases 6–7 remain.
+**Phases 0–6 are complete.** Design, the spine, ingestion/readiness/Life File, the financial flagship, cover and wealth, tax and estate, and the trusts pack are all on disk. Phase 7 remains.
 
 Source brief: [LIFE-OS-BOOTSTRAP-PROMPT.md](../LIFE-OS-BOOTSTRAP-PROMPT.md)
 
@@ -16,7 +16,7 @@ Source brief: [LIFE-OS-BOOTSTRAP-PROMPT.md](../LIFE-OS-BOOTSTRAP-PROMPT.md)
 | 6 | [commands.md](commands.md) | 20 command contracts: args, preconditions, idempotency, human gates |
 | 7 | [github.md](github.md) | GitHub as the system's own backlog, and the boundary that keeps your life off it |
 | 8 | [dependencies.md](dependencies.md) | Every package justified; external binaries; two live findings |
-| 9 | [adr/](adr/README.md) | 18 architecture decision records |
+| 9 | [adr/](adr/README.md) | 19 architecture decision records |
 
 ## Schemas
 

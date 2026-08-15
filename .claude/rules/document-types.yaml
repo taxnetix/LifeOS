@@ -178,3 +178,36 @@ types:
              "directors' report"]
     any: ["auditor", "balance sheet", "income statement", "equity", "cc", "pty"]
     routes_to: identity
+
+# >>> LIFEOS PACK: trusts >>>
+  letters_of_authority:
+    domain: trusts
+    require:
+    - letters of authority
+    strong:
+    - letters of authority
+    - master of the high court
+    - trustees authorised to act
+    any:
+    - master's reference
+    - trust name
+    - capacity
+    - appointed
+    routes_to: trusts
+  trust_resolution:
+    domain: trusts
+    require:
+    - resolution
+    strong:
+    - trustees' resolution
+    - trustees resolution
+    - resolved
+    - resolution number
+    any:
+    - meeting held
+    - trustees present
+    - distribution
+    - loan account
+    - master's reference
+    routes_to: trusts
+# <<< LIFEOS PACK: trusts <<<

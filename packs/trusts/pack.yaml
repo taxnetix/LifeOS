@@ -1,0 +1,152 @@
+# LifeOS pack — trust administration (South Africa)
+#
+# A pack is a directory obeying the same conventions as the core. Installing one
+# is a MERGE, not a fork: files are copied into their counterpart directories,
+# domains are enabled in profile.yaml, and nothing in the core is edited. That
+# is what makes a pack removable — and what stops a colleague's trust work from
+# entangling with anyone else's data.
+#
+# See docs/adr/0019-packs-merge-not-fork.md
+schema: pack/1
+name: trusts
+title: Trust administration (South Africa)
+version: 1.0.0
+jurisdiction: za
+
+description: >
+  Everything needed to administer inter vivos and testamentary trusts under SA
+  law: the trust register, trustees and their independence, the resolutions and
+  minutes register, beneficiaries by class and vesting, loan accounts and s7C
+  exposure, distributions and their tax attribution, and the compliance calendar
+  the Master and SARS both expect.
+
+whats_included:
+  - The trusts domain agent, at full depth
+  - A trust-compliance rulebook and an s7C rulebook, both dated
+  - Deed, letters of authority and resolution extraction
+  - /trust-review — compliance, s7C, independence, separation
+
+# Copied into the corresponding core directories on install.
+provides:
+  agents:   [trusts.md]
+  commands: [trust-review.md]
+  rules:    ["za/trust-compliance.yaml", "za/s7c.yaml"]
+  schemas:  []          # the core already carries the four trust ledgers
+
+# Enabled in profile.yaml → domains on install.
+enables_domains: [trusts]
+
+# Document types this pack can classify, appended to document-types.yaml.
+# NOTE: trust_deed is deliberately absent — the CORE already classifies it, and
+# a pack that redefines an existing key produces a YAML document that will not
+# parse. The installer refuses on collision rather than half-installing.
+document_types:
+  letters_of_authority:
+    domain: trusts
+    require: ["letters of authority"]
+    strong: ["letters of authority", "master of the high court",
+             "trustees authorised to act"]
+    any: ["master's reference", "trust name", "capacity", "appointed"]
+    routes_to: trusts
+  trust_resolution:
+    domain: trusts
+    require: ["resolution"]
+    strong: ["trustees' resolution", "trustees resolution", "resolved",
+             "resolution number"]
+    any: ["meeting held", "trustees present", "distribution", "loan account",
+          "master's reference"]
+    routes_to: trusts
+
+# Field extraction, appended to cover-fields.yaml. A pack carries the rules for
+# reading its own documents; the core knows nothing about trust deeds.
+cover_fields:
+  trust_deed:
+    ledger: trusts
+    fields:
+      name:            {pattern: '^(?i:trust name)\s+(\S.*?)\s*$'}
+      mt_number:       {pattern: "^(?i:master's reference number)\\s+(\\S.*?)\\s*$"}
+      type_text:       {pattern: '^(?i:trust type)\s+(\S.*?)\s*$'}
+      founder_name:    {pattern: '^(?i:founder)\s+(\S.*?)\s*$'}
+      signed_on:       {pattern: '^(?i:deed signed on)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      year_end:        {pattern: '^(?i:financial year end)\s+(\S.*?)\s*$'}
+      min_trustees:    {pattern: '^(?i:minimum number of trustees)\s+(\S.*?)\s*$'}
+      deed_requires_independent: {pattern: '^(?i:independent trustee required by deed)\s+(\S.*?)\s*$'}
+      quorum:          {pattern: '^(?i:quorum for resolutions)\s+(\S.*?)\s*$'}
+
+  letters_of_authority:
+    ledger: trusts
+    fields:
+      name:            {pattern: '^(?i:trust name)\s+(\S.*?)\s*$'}
+      mt_number:       {pattern: "^(?i:master's reference number)\\s+(\\S.*?)\\s*$"}
+      type_text:       {pattern: '^(?i:trust type)\s+(\S.*?)\s*$'}
+      founder_name:    {pattern: '^(?i:founder)\s+(\S.*?)\s*$'}
+      loa_issued_on:   {pattern: '^(?i:letters issued on)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      year_end:        {pattern: '^(?i:financial year end)\s+(\S.*?)\s*$'}
+    # Who the Master has actually authorised to act. The ledger must never
+    # claim a trustee the letters do not name.
+    resolves:
+      trustee:
+        pattern: '^([A-Z]\s?[A-Za-z ]+?)\s+(Trustee|Independent trustee|Chair|Alternate)\s+(\d{1,2}\s+\w+\s+\d{4})\s*$'
+
+  trust_resolution:
+    ledger: trustees
+    fields:
+      mt_number:       {pattern: "^(?i:master's reference number)\\s+(\\S.*?)\\s*$"}
+      resolution_no:   {pattern: '^(?i:resolution number)\s+(\S.*?)\s*$'}
+      meeting_on:      {pattern: '^(?i:meeting held on)\s+(\d{1,2}\s+\w+\s+\d{4})', type: date}
+      present:         {pattern: '^(?i:trustees present)\s+(\S.*?)\s*$'}
+    # A resolution yields a resolution record, plus the distributions and loan
+    # acknowledgements it authorises — each its own ledger row.
+    resolves:
+      distribution:
+        pattern: '^(?i:distribution to)\s+([A-Z]\s?[A-Za-z ]+?)\s+(R\s?[\d  ,.]+\d)\s+([a-z ]+?),\s*(?i:vested)\s+(\d{1,2}\s+\w+\s+\d{4})'
+      loan:
+        pattern: '^(?i:loan account acknowledged)\s+([A-Z]\s?[A-Za-z ]+?),\s*(R\s?[\d  ,.]+\d),\s*(interest free|[\d.]+%)'
+
+# Requirements appended to the readiness checklist.
+# NOTE: H1 (trust deed and letters of authority) is deliberately absent — the
+# CORE already ships it. Adding it here would not break YAML, it would silently
+# score the same requirement twice. The installer now refuses that too.
+readiness_requirements:
+  - id: H5
+    label: Independent trustee appointed
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms: [trust]
+    satisfied_by: []
+    consequence: severe
+    effort: weeks
+    note: >
+      The Master expects an independent trustee on most inter vivos discretionary
+      trusts. Without one, the trust is materially easier to attack as the
+      founder's alter ego — which puts its assets back in the founder's estate.
+  - id: H6
+    label: Trustee resolutions register current
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms: [trust]
+    satisfied_by: [trust_resolution]
+    consequence: severe
+    effort: hours
+    note: >
+      A distribution without a resolution authorising it is the single most
+      common finding against a trust, and it is the one that makes the conduit
+      principle fail.
+  - id: H15
+    label: Beneficial ownership register filed with the Master
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms: [trust]
+    satisfied_by: []
+    consequence: severe
+    effort: hours
+    expires_days: 365
+
+# Shown by /install-pack after a successful install.
+next_steps:
+  - "Drop the trust deed, letters of authority and the latest resolutions in $VAULT/inbox/"
+  - "Run /heartbeat to file and extract them"
+  - "Run /trust-review for compliance, s7C exposure and the independence check"

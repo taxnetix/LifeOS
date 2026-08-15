@@ -1,0 +1,19 @@
+{
+  "trusts": {
+    "installed_at": "2026-08-15T15:58:53Z",
+    "provides": {
+      "agents": [
+        "trusts.md"
+      ],
+      "commands": [
+        "trust-review.md"
+      ],
+      "rules": [
+        "za/trust-compliance.yaml",
+        "za/s7c.yaml"
+      ],
+      "schemas": []
+    },
+    "version": "1.0.0"
+  }
+}

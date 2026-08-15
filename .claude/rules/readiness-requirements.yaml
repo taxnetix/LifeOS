@@ -300,3 +300,43 @@ requirements:
       An estate is frozen at death. Without reachable cash the family cannot pay
       for the funeral, the bond, or the groceries, regardless of how solvent the
       estate is on paper.
+
+# >>> LIFEOS PACK: trusts >>>
+  - id: H5
+    label: Independent trustee appointed
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms:
+    - trust
+    satisfied_by: []
+    consequence: severe
+    effort: weeks
+    note: "The Master expects an independent trustee on most inter vivos discretionary
+      trusts. Without one, the trust is materially easier to attack as the founder's
+      alter ego — which puts its assets back in the founder's estate.\n"
+  - id: H6
+    label: Trustee resolutions register current
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms:
+    - trust
+    satisfied_by:
+    - trust_resolution
+    consequence: severe
+    effort: hours
+    note: "A distribution without a resolution authorising it is the single most common
+      finding against a trust, and it is the one that makes the conduit principle fail.\n"
+  - id: H15
+    label: Beneficial ownership register filed with the Master
+    category: trusts
+    domain: trusts
+    scope: entity
+    applies_to_forms:
+    - trust
+    satisfied_by: []
+    consequence: severe
+    effort: hours
+    expires_days: 365
+# <<< LIFEOS PACK: trusts <<<
