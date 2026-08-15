@@ -7,16 +7,31 @@
 #
 # NEVER bypass this with --no-verify.
 # See docs/adr/0008-vault-location-and-separation.md
+#
+# ── On precision ─────────────────────────────────────────────────────────────
+# This guard is deliberately LESS trigger-happy than the runtime egress guard,
+# and the asymmetry is intentional:
+#
+#   egress (pii-guard.py)  a false positive costs seconds — rewrite the query.
+#                          A false negative is a permanent disclosure.
+#                          -> block on any ID-shaped number, checksum or not.
+#
+#   pre-commit (here)      a false positive blocks legitimate work, and a guard
+#                          that cries wolf gets bypassed with --no-verify, which
+#                          is far worse than a narrower guard.
+#                          -> Luhn-validate IDs; honour a declared-fake list for
+#                             content rules; NEVER relax the path rule.
 set -uo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
 VAULT_DIRNAME="$(basename "${LIFEOS_VAULT:-$REPO/vault}")"
+FAKE_LIST="$REPO/.claude/hooks/fake-data-paths"
 fail=0
 
 staged="$(git diff --cached --name-only --diff-filter=ACMR)"
 [[ -z "$staged" ]] && exit 0
 
-# ── 1. No staged path inside the vault ───────────────────────────────────────
+# ── 1. No staged path inside the vault. Never relaxed, for any reason. ───────
 vault_hits="$(echo "$staged" | grep -E "^(${VAULT_DIRNAME}|vault)/" || true)"
 if [[ -n "$vault_hits" ]]; then
   echo "REFUSED: these staged paths are inside the vault:" >&2
@@ -27,41 +42,79 @@ if [[ -n "$vault_hits" ]]; then
   fail=1
 fi
 
-# ── 2. No personal-data patterns in staged content ───────────────────────────
-diff_text="$(git diff --cached --diff-filter=ACMR -U0 | grep '^+' | grep -v '^+++' || true)"
+# ── Which staged files are declared to hold only fabricated data? ────────────
+is_declared_fake() {
+  local path="$1"
+  [[ -f "$FAKE_LIST" ]] || return 1
+  while IFS= read -r prefix; do
+    [[ -z "$prefix" || "$prefix" == \#* ]] && continue
+    [[ "$path" == "$prefix"* ]] && return 0
+  done < "$FAKE_LIST"
+  return 1
+}
 
-if [[ -n "$diff_text" ]]; then
-  # SA ID number: YYMMDD SSSS C A Z
-  if echo "$diff_text" | grep -Eq '\b[0-9]{6}[0-5][0-9]{3}[01][0-9]{2}\b'; then
-    echo "REFUSED: staged content contains something shaped like an SA ID number." >&2
-    fail=1
-  fi
-  # Long digit runs — account / policy / member numbers
-  if echo "$diff_text" | grep -Eq '\b[0-9]{11,16}\b'; then
-    echo "REFUSED: staged content contains a long digit run (account/policy number?)." >&2
-    fail=1
-  fi
-  # Credentials
-  if echo "$diff_text" | grep -Eqi 'password[[:space:]]*[:=]|api[_-]?key[[:space:]]*[:=]|BEGIN [A-Z ]*PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,}'; then
-    echo "REFUSED: staged content looks like it contains a credential." >&2
-    fail=1
-  fi
-fi
+# ── 2. Content checks, per file ──────────────────────────────────────────────
+# A real SA ID carries a Luhn check digit. Blocking only checksum-valid numbers
+# removes the false positives that invented test data produces, while still
+# catching every number that could belong to an actual person.
+luhn_valid() {
+  local n="$1" sum=0 alt=0 i d
+  for (( i=${#n}-1; i>=0; i-- )); do
+    d=${n:$i:1}
+    if (( alt )); then (( d *= 2 )); (( d > 9 )) && (( d -= 9 )); fi
+    (( sum += d )); alt=$(( 1 - alt ))
+  done
+  (( sum % 10 == 0 ))
+}
 
-# ── 3. No proper names from the live profile ─────────────────────────────────
 PROFILE="${LIFEOS_VAULT:-$REPO/vault}/profile/profile.yaml"
-if [[ -f "$PROFILE" && -n "$diff_text" ]]; then
-  while read -r name; do
-    [[ ${#name} -lt 4 ]] && continue
-    if echo "$diff_text" | grep -Fqi -- "$name"; then
-      echo "REFUSED: staged content contains a name from your profile." >&2
-      echo "         (the name itself is not printed here, on purpose)" >&2
+
+while IFS= read -r file; do
+  [[ -z "$file" ]] && continue
+  added="$(git diff --cached --diff-filter=ACMR -U0 -- "$file" | grep '^+' | grep -v '^+++' || true)"
+  [[ -z "$added" ]] && continue
+
+  # SA ID numbers — checked in EVERY file, declared-fake or not.
+  while IFS= read -r candidate; do
+    [[ -z "$candidate" ]] && continue
+    if luhn_valid "$candidate"; then
+      echo "REFUSED: $file contains a checksum-valid SA ID number." >&2
+      echo "         (a valid ID inside a file you declared fake is a mistake, not a coincidence)" >&2
       fail=1
       break
     fi
-  done < <(grep -Eo '^[[:space:]]*-?[[:space:]]*(full_name|legal_name|trading_name):.*' "$PROFILE" 2>/dev/null \
-             | sed 's/.*: *//' | tr -d '"'"'" | tr ' ' '\n' | sort -u)
-fi
+  done < <(echo "$added" | grep -Eo '\b[0-9]{6}[0-5][0-9]{3}[01][0-9]{2}\b' | sort -u)
+
+  # Credentials — never acceptable anywhere, fake or not.
+  if echo "$added" | grep -Eqi 'password[[:space:]]*[:=][[:space:]]*[^[:space:]]|api[_-]?key[[:space:]]*[:=][[:space:]]*[^[:space:]]|BEGIN [A-Z ]*PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,}'; then
+    echo "REFUSED: $file looks like it contains a credential." >&2
+    fail=1
+  fi
+
+  is_declared_fake "$file" && continue
+
+  # Long digit runs — account, policy, member numbers.
+  if echo "$added" | grep -Eq '\b[0-9]{11,16}\b'; then
+    echo "REFUSED: $file contains a long digit run (account/policy number?)." >&2
+    echo "         If this file holds only invented data, add its path to" >&2
+    echo "         .claude/hooks/fake-data-paths — that claim gets reviewed in the diff." >&2
+    fail=1
+  fi
+
+  # Proper names from the live profile.
+  if [[ -f "$PROFILE" ]]; then
+    while read -r name; do
+      [[ ${#name} -lt 4 ]] && continue
+      if echo "$added" | grep -Fqi -- "$name"; then
+        echo "REFUSED: $file contains a name from your profile." >&2
+        echo "         (the name itself is not printed here, on purpose)" >&2
+        fail=1
+        break
+      fi
+    done < <(grep -Eo '^[[:space:]]*-?[[:space:]]*(full_name|legal_name|trading_name|name):.*' "$PROFILE" 2>/dev/null \
+               | sed 's/.*: *//' | tr -d '"'"'" | tr ' ' '\n' | sort -u)
+  fi
+done <<< "$staged"
 
 if [[ "$fail" -ne 0 ]]; then
   echo "" >&2

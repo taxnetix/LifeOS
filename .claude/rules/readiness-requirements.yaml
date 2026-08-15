@@ -1,0 +1,302 @@
+# The Life File checklist, as data.
+#
+# Every row becomes one readiness record per applicable subject. The SCORE is
+# weighted by `consequence`, never by count — a missing signed will and a
+# missing gym contract are not one-all. `effort` ranks the shortest path:
+# score-delta divided by effort is what makes "do these three things next"
+# a real answer rather than a list.
+#
+# consequence: catastrophic 16 | severe 8 | moderate 3 | minor 1
+# effort:      minutes 1 | hours 3 | days 8 | weeks 20
+#
+# scope: household — one row for the whole vault
+#        person    — one row per person in profile.yaml
+#        entity    — one row per entity in profile.yaml
+#
+# satisfied_by: document types (from document-types.yaml) that prove it
+# domain:       the owning domain; rows for a DISABLED domain are excluded from
+#               the score and listed separately as "not tracked" — never
+#               silently dropped.
+#
+# as_at: 2026-08-15
+schema: readiness-requirements/1
+
+requirements:
+  # ── Estate: the highest-consequence rows in the whole file ────────────────
+  - id: G1
+    applies_to_relations: [self, spouse]
+    label: Signed will
+    category: estate
+    domain: estate
+    scope: person
+    satisfied_by: [will]
+    consequence: catastrophic
+    effort: days
+    note: >
+      Dying without a valid signed will means the Intestate Succession Act
+      decides, the Master appoints the executor, and minor children's
+      inheritances go to the Guardian's Fund.
+
+  - id: G1b
+    applies_to_relations: [self, spouse]
+    label: Location of the signed original will is recorded
+    category: estate
+    domain: estate
+    scope: person
+    satisfied_by: []
+    requires_field: will_original_location
+    consequence: catastrophic
+    effort: minutes
+    note: A will nobody can find is a will that does not exist.
+
+  - id: G2
+    applies_to_relations: [self, spouse]
+    label: Living will
+    category: estate
+    domain: estate
+    scope: person
+    satisfied_by: [will]
+    consequence: severe
+    effort: days
+
+  - id: G5
+    label: Beneficiary nominations recorded and checked against the will
+    category: estate
+    domain: estate
+    scope: household
+    satisfied_by: [policy_schedule]
+    consequence: catastrophic
+    effort: hours
+    note: >
+      A nomination overrides the will for that asset. A conflict is invisible
+      from inside any single domain, and is one of the highest-value findings
+      this system can produce.
+
+  - id: G7
+    label: People to notify on death, with contact details
+    category: estate
+    domain: estate
+    scope: household
+    satisfied_by: []
+    consequence: moderate
+    effort: minutes
+
+  # ── Identity ──────────────────────────────────────────────────────────────
+  - id: A6
+    applies_to_relations: [self, spouse, child, dependant]
+    label: Identity document
+    category: identity
+    domain: identity
+    scope: person
+    satisfied_by: [identity_document]
+    consequence: severe
+    effort: days
+
+  - id: A9
+    label: Marriage certificate or ANC contract
+    category: identity
+    domain: identity
+    scope: household
+    satisfied_by: [identity_document]
+    consequence: severe
+    effort: days
+    note: The matrimonial property regime determines what is even in the estate.
+
+  - id: A23
+    applies_to_forms: [pty_ltd, cc]
+    label: Company financial statements less than 6 months old
+    category: identity
+    domain: identity
+    scope: entity
+    satisfied_by: [financial_statements]
+    consequence: moderate
+    effort: weeks
+    expires_days: 183
+
+  # ── Insurance ─────────────────────────────────────────────────────────────
+  - id: C1
+    label: Life policy schedule
+    category: insurance
+    domain: insurance
+    scope: household
+    satisfied_by: [policy_schedule]
+    consequence: severe
+    effort: hours
+
+  - id: C6
+    label: Short-term insurance schedule
+    category: insurance
+    domain: insurance
+    scope: household
+    satisfied_by: [policy_schedule]
+    consequence: moderate
+    effort: hours
+
+  - id: C8
+    label: Broker contact details recorded
+    category: insurance
+    domain: insurance
+    scope: household
+    satisfied_by: []
+    consequence: moderate
+    effort: minutes
+
+  # ── Living ────────────────────────────────────────────────────────────────
+  - id: B1a
+    label: Medical aid membership certificate
+    category: living
+    domain: living
+    scope: household
+    satisfied_by: [medical_aid_certificate]
+    consequence: severe
+    effort: hours
+    expires_days: 365
+
+  - id: B7b
+    label: Password manager location and master access plan
+    category: living
+    domain: living
+    scope: household
+    satisfied_by: []
+    consequence: severe
+    effort: minutes
+    note: >
+      A pointer, never a secret. Without it the digital estate is unreachable
+      even by an executor with full legal authority.
+
+  - id: B8a
+    label: Safe location and code custodian named
+    category: living
+    domain: living
+    scope: household
+    satisfied_by: []
+    consequence: moderate
+    effort: minutes
+
+  # ── Finance ───────────────────────────────────────────────────────────────
+  - id: B4
+    label: Bank statement less than 3 months old
+    category: finance
+    domain: finance
+    scope: household
+    satisfied_by: [bank_statement, transaction_export]
+    consequence: moderate
+    effort: minutes
+    expires_days: 92
+
+  - id: B5
+    label: Debit orders and recurring payments listed with cancellation routes
+    category: finance
+    domain: finance
+    scope: household
+    satisfied_by: []
+    consequence: moderate
+    effort: hours
+
+  # ── Assets ────────────────────────────────────────────────────────────────
+  - id: E1
+    label: Title deed and its physical location
+    category: assets
+    domain: assets
+    scope: household
+    satisfied_by: [title_deed]
+    consequence: severe
+    effort: days
+
+  - id: E14
+    label: Suretyships declared, or explicitly confirmed as none
+    category: assets
+    domain: assets
+    scope: household
+    satisfied_by: []
+    consequence: catastrophic
+    effort: hours
+    note: >
+      The most-forgotten and most-damaging item at death. An undeclared
+      suretyship can consume an estate that otherwise looked solvent.
+
+  - id: E2
+    label: Vehicle registration documents
+    category: assets
+    domain: assets
+    scope: household
+    satisfied_by: [vehicle_registration]
+    consequence: moderate
+    effort: hours
+
+  # ── Investments ───────────────────────────────────────────────────────────
+  - id: D11
+    label: Investment statement less than 12 months old
+    category: investments
+    domain: investments
+    scope: household
+    satisfied_by: [investment_statement]
+    consequence: moderate
+    effort: minutes
+    expires_days: 365
+
+  # ── Tax ───────────────────────────────────────────────────────────────────
+  - id: F2
+    applies_to_relations: [self, spouse]
+    label: IRP5 or IT3(a) for the latest tax year
+    category: tax
+    domain: tax
+    scope: person
+    satisfied_by: [irp5]
+    consequence: moderate
+    effort: hours
+    expires_days: 365
+
+  - id: F22
+    label: Tax deadline calendar populated
+    category: tax
+    domain: tax
+    scope: household
+    satisfied_by: []
+    consequence: severe
+    effort: hours
+
+  # ── Trusts ────────────────────────────────────────────────────────────────
+  - id: H1
+    applies_to_forms: [trust]
+    label: Trust deed and letters of authority
+    category: trusts
+    domain: trusts
+    scope: entity
+    satisfied_by: [trust_deed]
+    consequence: severe
+    effort: days
+
+  # ── Final wishes ──────────────────────────────────────────────────────────
+  - id: I1
+    applies_to_relations: [self, spouse]
+    label: Burial or cremation preference recorded
+    category: final-wishes
+    domain: final-wishes
+    scope: person
+    satisfied_by: []
+    consequence: moderate
+    effort: minutes
+    note: The first decision the family must make, usually within 48 hours.
+
+  - id: I2
+    label: Grave or plot deed, if purchased
+    category: final-wishes
+    domain: final-wishes
+    scope: household
+    satisfied_by: [deed_of_grave]
+    consequence: minor
+    effort: hours
+
+  - id: I6
+    label: Thirty-day liquidity plan
+    category: final-wishes
+    domain: final-wishes
+    scope: household
+    satisfied_by: []
+    consequence: catastrophic
+    effort: hours
+    note: >
+      An estate is frozen at death. Without reachable cash the family cannot pay
+      for the funeral, the bond, or the groceries, regardless of how solvent the
+      estate is on paper.

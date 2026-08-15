@@ -1,6 +1,6 @@
 # LifeOS — Documentation
 
-**Phase 0 (Plan) is complete.** Everything here is design. No agents, commands, hooks or tools are implemented yet — that begins in Phase 1, after review.
+**Phases 0–2 are complete.** Design, the working spine, and the ingestion/readiness/Life File pipeline are all on disk. Phases 3–7 remain.
 
 Source brief: [LIFE-OS-BOOTSTRAP-PROMPT.md](../LIFE-OS-BOOTSTRAP-PROMPT.md)
 

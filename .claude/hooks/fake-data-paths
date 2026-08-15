@@ -1,0 +1,21 @@
+# Paths declared to contain ONLY fabricated data.
+#
+# The pre-commit guard relaxes its CONTENT checks (long digit runs, profile
+# names) for files under these prefixes. It never relaxes the path check: a file
+# inside the real vault is refused regardless of what is listed here.
+#
+# This file is deliberately a committed artefact rather than a hardcoded list,
+# so that widening the exemption shows up in a diff and gets reviewed. Adding a
+# line here is a claim you are making on the record: "everything under this path
+# is invented."
+#
+# Luhn-valid SA ID numbers are blocked EVERYWHERE, including here — a checksum-
+# valid ID inside a file you called fake is far more likely to be a mistake than
+# a coincidence.
+
+vault.example/
+tools/py/tests/
+tools/scripts/make_fixtures.py
+.claude/commands/selftest.md
+.claude/hooks/
+docs/

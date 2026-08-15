@@ -1,0 +1,149 @@
+# Document type detection — data, not code.
+#
+# The librarian classifies by scoring a document's text against these rules.
+# Adding a document type is an edit here plus a fixture, never a code change.
+#
+# Scoring: each matched `any` term scores 1, each matched `strong` term scores 3.
+# `require` terms must ALL be present or the rule cannot match at all.
+# The winning type must beat `min_score`, and must beat the runner-up by
+# `min_margin` — otherwise the document is UNCLASSIFIED, which is a gap record
+# and a question for the human, never a coin-flip between two plausible types.
+#
+# as_at: 2026-08-15
+schema: document-types/1
+min_score: 4
+min_margin: 2
+
+types:
+  bank_statement:
+    domain: finance
+    period: statement          # extract a from/to period
+    strong: ["statement period", "closing balance", "opening balance", "account statement"]
+    any: ["branch code", "money in", "money out", "debit order", "available balance",
+          "account number", "cheque account", "savings account", "transaction date"]
+    routes_to: finance
+
+  credit_card_statement:
+    domain: finance
+    period: statement
+    strong: ["credit card statement", "minimum payment", "credit limit"]
+    any: ["card number", "payment due", "interest charged", "available credit"]
+    routes_to: finance
+
+  # A bare CSV/XLS export from online banking: no letterhead, no prose, just
+  # columns. Matched on the header row itself, which is the only signal such a
+  # file carries. `require` keeps it from swallowing every spreadsheet.
+  transaction_export:
+    domain: finance
+    period: statement
+    require: ["date", "amount"]
+    strong: ["date;description;amount", "date,description,amount",
+             "date\tdescription\tamount", "description;amount;balance",
+             "description,amount,balance", "posting date", "transaction history"]
+    any: ["balance", "description", "reference", "debit", "credit", "narrative"]
+    routes_to: finance
+
+  investment_statement:
+    domain: investments
+    period: statement
+    strong: ["units", "unit price", "portfolio valuation", "total expense ratio"]
+    any: ["ter", "fund", "platform", "market value", "holdings", "asset allocation",
+          "tax free savings", "retirement annuity", "preservation fund"]
+    routes_to: investments
+
+  policy_schedule:
+    domain: insurance
+    strong: ["policy schedule", "sum assured", "life assured", "policy number"]
+    any: ["premium", "beneficiary", "cession", "insurer", "waiting period",
+          "exclusions", "escalation", "inception date", "broker"]
+    routes_to: insurance
+
+  medical_aid_certificate:
+    domain: living
+    strong: ["medical scheme", "membership certificate", "main member"]
+    any: ["dependant", "plan", "option", "scheme", "membership number",
+          "gap cover", "savings account", "threshold"]
+    routes_to: living
+
+  payslip:
+    domain: finance
+    strong: ["payslip", "salary advice", "net pay"]
+    any: ["gross", "paye", "uif", "employee number", "deductions", "earnings"]
+    routes_to: finance
+
+  irp5:
+    domain: tax
+    strong: ["irp5", "it3(a)", "employees tax certificate"]
+    any: ["sars", "year of assessment", "source code", "tax reference"]
+    routes_to: tax
+
+  it3b:
+    domain: tax
+    strong: ["it3(b)", "it3(c)", "investment income certificate"]
+    any: ["interest", "dividends", "capital gains", "year of assessment"]
+    routes_to: tax
+
+  tax_assessment:
+    domain: tax
+    strong: ["notice of assessment", "itа34", "ita34", "assessed"]
+    any: ["sars", "tax calculation", "amount payable", "amount refundable"]
+    routes_to: tax
+
+  will:
+    domain: estate
+    require: ["will"]
+    strong: ["last will and testament", "i revoke all previous wills", "testator"]
+    any: ["executor", "bequeath", "estate", "witness", "codicil", "guardian",
+          "residue", "devolve"]
+    routes_to: estate
+
+  trust_deed:
+    domain: trusts
+    strong: ["trust deed", "deed of trust", "letters of authority", "founder"]
+    any: ["trustee", "beneficiary", "master of the high court", "vest",
+          "discretionary", "inter vivos"]
+    routes_to: trusts
+
+  title_deed:
+    domain: assets
+    strong: ["deed of transfer", "title deed", "registrar of deeds"]
+    any: ["erf", "portion", "township", "extent", "conveyancer", "mortgage bond"]
+    routes_to: assets
+
+  deed_of_grave:
+    domain: final-wishes
+    strong: ["deed of grave", "burial plot", "cemetery"]
+    any: ["plot number", "section", "interment", "memorial park"]
+    routes_to: final-wishes
+
+  vehicle_registration:
+    domain: assets
+    strong: ["registration certificate", "natis", "vehicle register"]
+    any: ["vin", "engine number", "licence number", "make", "model"]
+    routes_to: assets
+
+  municipal_account:
+    domain: living
+    strong: ["municipal account", "rates and taxes", "municipality"]
+    any: ["water", "electricity", "refuse", "sewerage", "erf"]
+    routes_to: living
+
+  identity_document:
+    domain: identity
+    strong: ["identity document", "identity number", "birth certificate",
+             "marriage certificate", "passport"]
+    any: ["republic of south africa", "date of birth", "surname", "forenames"]
+    routes_to: identity
+
+  lease_agreement:
+    domain: living
+    strong: ["lease agreement", "agreement of lease", "lessor", "lessee"]
+    any: ["rental", "deposit", "escalation", "premises", "landlord", "tenant"]
+    routes_to: living
+
+  financial_statements:
+    domain: identity
+    strong: ["annual financial statements", "statement of financial position",
+             "directors' report"]
+    any: ["auditor", "balance sheet", "income statement", "equity", "cc", "pty"]
+    routes_to: identity

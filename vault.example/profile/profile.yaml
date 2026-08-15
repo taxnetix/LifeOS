@@ -1,55 +1,68 @@
-# LifeOS profile — who you are and how the system should behave.
-# Hand-edit this freely. It is round-tripped with ruamel.yaml, so your comments
-# and ordering survive every automated update.
+# LifeOS profile — FICTIONAL. This is the demo vault; every person, entity and
+# number here is invented. Tests and documentation run against this so nothing
+# real ever has to be.
 schema: profile/1
 
 jurisdiction: za
 currency: ZAR
-fiscal_year_end: "02-28"        # last day of Feb; leap years handled automatically
+fiscal_year_end: "02-28"
 timezone: Africa/Johannesburg
 
-people: []                       # per_<slug> entries — /lifeos-init interviews you
-entities: []                     # ent_<slug> entries
+people:
+  - ref: per_a_sample
+    name: A Sample
+    relation: self
+  - ref: per_m_sample
+    name: M Sample
+    relation: spouse
+  - ref: per_t_sample
+    name: T Sample
+    relation: child
+
+entities:
+  - ref: ent_sample_family_trust
+    name: The Sample Family Trust
+    form: trust
+  - ref: ent_northwind
+    name: Northwind Software (Pty) Ltd
+    form: pty_ltd
 
 communication:
-  report_length: short           # short | normal | full
+  report_length: short
   tone: direct
   language: en-ZA
 
-domains:                         # disable a domain and it degrades to
-  identity: true                 # "not tracked" with an explicit note —
-  living: false                  # it never breaks the graph
-  finance: false
-  insurance: false
-  investments: false
-  assets: false
-  tax: false
-  estate: false
-  trusts: false
-  final-wishes: false
-  readiness: false
+domains:
+  identity: true
+  living: true
+  finance: true
+  insurance: true
+  investments: true
+  assets: true
+  tax: true
+  estate: true
+  trusts: true
+  final-wishes: true
+  readiness: true
 
-packs: []                        # trusts | sme-owner | expat | phd-researcher | landlord
+packs: [trusts]
 
 heartbeat:
-  max_items: 5                   # a heartbeat may leave work queued; that is normal
-  max_waves: 4                   # depth becomes waves, not stack frames
-  quiet_journal: true            # a quiet run writes one line, not a page
+  max_items: 5
+  max_waves: 4
+  quiet_journal: true
 
 thresholds:
-  variance_pct: 15               # budget breach raises variance.breach
-  agent_overload:                # meta-architect proposes promoting a specialist
-    avg_duration_ms: 120000      # when these are crossed
+  variance_pct: 15
+  agent_overload:
+    avg_duration_ms: 120000
     failures_recent: 3
     open_loops: 10
 
 github:
   enabled: true
-  autofile: false                # true files issues without asking. Only sensible
-                                 # for a PRIVATE system repo — an issue body is
-                                 # publication, and it cannot be un-sent.
-  priority_ceiling: 3            # system work never outranks a tax deadline
+  autofile: false
+  priority_ceiling: 3
 
 finance:
-  category_floor: 0.90           # below this a transaction lands UNCATEGORISED
-                                 # with a question, never guessed into a bucket
+  category_floor: 0.90

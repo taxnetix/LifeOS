@@ -15,6 +15,18 @@ vault-*/
 *.local
 *.local.*
 
+# ─── vault.example: sources are committed, derived artefacts are not ─────────
+#  Everything below is reproducible from vault.example/inbox/ + profile.yaml by
+#  running /ingest and /life-file. That is the same "every derived artefact must
+#  be reproducible from source documents plus config" rule the real vault obeys,
+#  and it keeps regenerated PDFs out of the diff.
+vault.example/documents/2*/
+vault.example/documents/index.jsonl
+vault.example/reports/
+vault.example/state/*.json
+vault.example/state/*.jsonl
+vault.example/ledgers/*.jsonl
+
 # ─── Python ──────────────────────────────────────────────────────────────────
 .venv/
 __pycache__/
